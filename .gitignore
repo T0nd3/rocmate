@@ -15,3 +15,5 @@ htmlcov/
 .vscode/
 *.swp
 .DS_Store
+.claude/
+PLAN.md
