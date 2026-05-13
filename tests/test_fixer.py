@@ -50,6 +50,16 @@ def test_detect_shell_profile_returns_bashrc_as_default(tmp_path):
     assert result == tmp_path / ".bashrc"
 
 
+def test_detect_shell_profile_returns_fish_config(tmp_path):
+    with (
+        patch.dict(os.environ, {"SHELL": "/usr/bin/fish"}),
+        patch("rocmate.fixer.Path") as mock_path,
+    ):
+        mock_path.home.return_value = tmp_path
+        result = fixer._detect_shell_profile()
+    assert result == tmp_path / ".config/fish/config.fish"
+
+
 # --- fix_env_in_profile ---
 
 
@@ -74,6 +84,17 @@ def test_fix_env_is_idempotent(tmp_path):
     with patch("rocmate.fixer._detect_shell_profile", return_value=profile):
         result = fixer.fix_env_in_profile("MY_VAR", "my_value")
     assert not result.applied
+
+
+def test_fix_env_returns_not_applied_on_oserror(tmp_path):
+    profile = tmp_path / ".bashrc"
+    with (
+        patch("rocmate.fixer._detect_shell_profile", return_value=profile),
+        patch("builtins.open", side_effect=OSError("permission denied")),
+    ):
+        result = fixer.fix_env_in_profile("MY_VAR", "my_value")
+    assert not result.applied
+    assert "permission denied" in result.message
 
 
 def test_fix_env_preserves_existing_content(tmp_path):

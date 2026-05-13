@@ -308,3 +308,70 @@ class TestDoctorFixFlag:
             )
             result = self._with_fixable_check(["doctor", "--fix"], input="y\n")
         assert "bashrc" in result.output.lower() or "added" in result.output.lower()
+
+
+# --- rocmate list --chip ---
+
+
+def test_list_chip_filter_exits_zero():
+    assert runner.invoke(app, ["list", "--chip", "gfx1100"]).exit_code == 0
+
+
+def test_list_chip_filter_shows_only_supported_tools():
+    result = runner.invoke(app, ["list", "--chip", "gfx1100"])
+    assert "ollama" in result.output.lower()
+
+
+def test_list_chip_filter_excludes_unsupported_tools():
+    # faster-whisper has no gfx1201 entry
+    result = runner.invoke(app, ["list", "--chip", "gfx1201"])
+    assert "faster-whisper" not in result.output.lower()
+
+
+def test_list_chip_filter_exits_nonzero_for_no_matches():
+    result = runner.invoke(app, ["list", "--chip", "gfx9999"])
+    assert result.exit_code != 0
+
+
+def test_list_chip_filter_shows_chip_in_output():
+    result = runner.invoke(app, ["list", "--chip", "gfx1100"])
+    assert "gfx1100" in result.output
+
+
+# --- rocmate install --chip ---
+
+
+class TestInstallChipFlag:
+    def test_install_chip_flag_bypasses_gpu_detection(self):
+        with patch("rocmate.gpu.detect_amd_gpus", return_value=[]):
+            result = runner.invoke(app, ["install", "ollama", "--chip", "gfx1100"], input="n\n")
+        assert result.exit_code == 0
+
+    def test_install_chip_flag_shows_plan_for_given_chip(self):
+        with patch("rocmate.gpu.detect_amd_gpus", return_value=[]):
+            result = runner.invoke(app, ["install", "ollama", "--chip", "gfx1100"], input="n\n")
+        assert "gfx1100" in result.output
+
+    def test_install_chip_flag_exits_nonzero_for_unknown_chip(self):
+        with patch("rocmate.gpu.detect_amd_gpus", return_value=[]):
+            result = runner.invoke(app, ["install", "ollama", "--chip", "gfx9999"])
+        assert result.exit_code != 0
+
+    def test_install_chip_flag_takes_precedence_over_detected_gpu(self):
+        gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
+        with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]):
+            result = runner.invoke(app, ["install", "ollama", "--chip", "gfx1030"], input="n\n")
+        assert "gfx1030" in result.output
+
+
+# --- rocmate show: export lines ---
+
+
+def test_show_env_vars_as_export_lines():
+    result = runner.invoke(app, ["show", "comfyui"])
+    assert "export HSA_OVERRIDE_GFX_VERSION" in result.output
+
+
+def test_show_chip_env_vars_as_export_lines():
+    result = runner.invoke(app, ["show", "comfyui", "--chip", "gfx1100"])
+    assert "export HSA_OVERRIDE_GFX_VERSION" in result.output

@@ -124,10 +124,19 @@ def show(
 
 
 @app.command(name="list")
-def list_tools() -> None:
+def list_tools(
+    chip: str | None = typer.Option(None, "--chip", help="Filter to a specific chip, e.g. gfx1100"),
+) -> None:
     """List all tools with tested configurations."""
     tools = configs_module.list_tools()
-    console.print(f"[bold]Available tools ({len(tools)}):[/bold]")
+    if chip is not None:
+        tools = [t for t in tools if chip in configs_module.load_tool(t).chips]
+        if not tools:
+            console.print(f"[yellow]No tools found with support for '{chip}'.[/yellow]")
+            raise typer.Exit(code=1)
+        console.print(f"[bold]Tools supporting {chip} ({len(tools)}):[/bold]")
+    else:
+        console.print(f"[bold]Available tools ({len(tools)}):[/bold]")
     for t in tools:
         console.print(f"  • {t}")
 
@@ -155,16 +164,17 @@ def search(keyword: str = typer.Argument(..., help="Keyword to search for.")) ->
 def install(
     tool: str = typer.Argument(..., help="Tool to install, e.g. 'ollama'"),
     docker: bool = typer.Option(False, "--docker", help="Print a Docker Compose snippet instead."),
+    chip: str | None = typer.Option(None, "--chip", help="Target chip, skips GPU detection."),
 ) -> None:
     """Install a tool with the correct ENV vars and pip indexes for your AMD GPU."""
     from rocmate import gpu as gpu_module
 
-    gpus = gpu_module.detect_amd_gpus()
-    if not gpus:
-        console.print("[red]No AMD GPU detected — cannot determine install config.[/red]")
-        raise typer.Exit(code=1)
-
-    chip = gpus[0].gfx_version
+    if chip is None:
+        gpus = gpu_module.detect_amd_gpus()
+        if not gpus:
+            console.print("[red]No AMD GPU detected — use --chip to specify one manually.[/red]")
+            raise typer.Exit(code=1)
+        chip = gpus[0].gfx_version
     try:
         plan = install_module.build_plan(tool, chip)
     except FileNotFoundError:
