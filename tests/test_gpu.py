@@ -160,22 +160,24 @@ def test_run_returns_none_when_command_not_found():
 # =============================================================================
 
 _HIPINFO_ONE_GPU = """\
-Device #0
-  Device name: AMD Radeon RX 7900 XTX
-  gcnArchName: gfx1100
-  totalGlobalMem: 25769803776
+--------------------------------------------------------------------------------
+device#                           0
+Name:                             AMD Radeon RX 7900 XTX
+totalGlobalMem:                   23.98 GB
+gcnArchName:                      gfx1100
 """
 
 _HIPINFO_TWO_GPUS = """\
-Device #0
-  Device name: AMD Radeon RX 7900 XTX
-  gcnArchName: gfx1100
-  totalGlobalMem: 25769803776
-
-Device #1
-  Device name: AMD Radeon RX 6900 XT
-  gcnArchName: gfx1030
-  totalGlobalMem: 17179869184
+--------------------------------------------------------------------------------
+device#                           0
+Name:                             AMD Radeon RX 7900 XTX
+totalGlobalMem:                   23.98 GB
+gcnArchName:                      gfx1100
+--------------------------------------------------------------------------------
+device#                           1
+Name:                             AMD Radeon RX 6900 XT
+totalGlobalMem:                   15.98 GB
+gcnArchName:                      gfx1030
 """
 
 _HIPINFO_NO_DEVICE = "No devices found.\n"
@@ -201,9 +203,9 @@ class TestParseHipinfo:
     def test_device_name(self):
         assert gpu._parse_hipinfo(_HIPINFO_ONE_GPU)[0].name == "AMD Radeon RX 7900 XTX"
 
-    def test_vram_bytes_converted_to_mb(self):
-        # 25769803776 bytes → 24576 MB
-        assert gpu._parse_hipinfo(_HIPINFO_ONE_GPU)[0].vram_mb == 24576
+    def test_vram_gb_converted_to_mb(self):
+        # 23.98 GB → int(23.98 * 1024) = 24555 MB
+        assert gpu._parse_hipinfo(_HIPINFO_ONE_GPU)[0].vram_mb == 24555
 
     def test_two_gpus(self):
         gpus = gpu._parse_hipinfo(_HIPINFO_TWO_GPUS)

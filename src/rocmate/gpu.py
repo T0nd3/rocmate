@@ -88,14 +88,14 @@ def _detect_amd_gpus_linux() -> list[GpuInfo]:
 def _parse_hipinfo(output: str) -> list[GpuInfo]:
     """Parse `hipinfo` stdout into GpuInfo objects."""
     gpus: list[GpuInfo] = []
-    blocks = re.split(r"Device\s+#\d+", output)
+    blocks = re.split(r"-{20,}", output)
     for block in blocks:
         gfx_match = re.search(r"gcnArchName:\s*(\S+)", block)
         if not gfx_match:
             continue
-        name_match = re.search(r"Device name:\s*(.+)", block)
-        mem_match = re.search(r"totalGlobalMem:\s*(\d+)", block)
-        vram_mb = int(mem_match.group(1)) // 1024 // 1024 if mem_match else None
+        name_match = re.search(r"^Name:\s*(.+)", block, re.MULTILINE)
+        mem_match = re.search(r"totalGlobalMem:\s*([\d.]+)\s*GB", block)
+        vram_mb = int(float(mem_match.group(1)) * 1024) if mem_match else None
         gpus.append(GpuInfo(
             name=name_match.group(1).strip() if name_match else "Unknown AMD GPU",
             gfx_version=gfx_match.group(1).strip(),
