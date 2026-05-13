@@ -35,7 +35,7 @@ _EXECUTABLE_PREFIXES = (
 
 def _is_executable(hint: str) -> bool:
     stripped = hint.strip()
-    if "&&" in stripped:
+    if "&&" in stripped or "|" in stripped:
         return False
     return any(stripped.startswith(p) for p in _EXECUTABLE_PREFIXES)
 

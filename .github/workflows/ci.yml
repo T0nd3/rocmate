@@ -25,5 +25,7 @@ jobs:
         run: |
           ruff check src tests
           ruff format --check src tests
+      - name: Lint configs
+        run: python scripts/lint_configs.py
       - name: Test
         run: pytest
