@@ -1,0 +1,52 @@
+name: ExLlamaV2
+description: Fast inference library for GPTQ and EXL2 quantized LLMs, optimised for AMD GPUs via ROCm.
+homepage: https://github.com/turboderp/exllamav2
+
+chips:
+  gfx1100:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 7900 XTX — excellent performance. ExLlamaV2 is one of the fastest GPTQ/EXL2
+      backends on AMD. Mistral 7B EXL2 4bpw runs at ~80 tok/s. 24 GB allows 34B Q4.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "pip install torch --index-url https://download.pytorch.org/whl/rocm6.2"
+      - "pip install exllamav2"
+      - "python test_inference.py -m /path/to/model -p \"Hello world\""
+      - "Or build from source for latest features: git clone https://github.com/turboderp/exllamav2 && pip install -e ."
+      - "cmake -DCMAKE_BUILD_TYPE=Release . && cmake --build . --target exl2 --config Release"
+
+  gfx1101:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: RX 7800 XT / RX 7700 XT — works well. 16 GB VRAM suits 13B Q4 or 7B Q8 models.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "Same install as gfx1100."
+
+  gfx1030:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 6800/6900 — functional but kernel tuning may differ from RDNA3.
+      Performance is good for quantized models; throughput ~60-70 % of gfx1100.
+    env_vars: {}
+    install_hints:
+      - "pip install torch --index-url https://download.pytorch.org/whl/rocm6.2"
+      - "pip install exllamav2"
+
+  gfx1102:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 7600 (8 GB) — 7B EXL2 4bpw fits with room to spare. 13B Q4 is tight but possible.
+      Monitor VRAM with rocm-smi; context length may need reducing.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "pip install torch --index-url https://download.pytorch.org/whl/rocm6.2"
+      - "pip install exllamav2"
+      - "Reduce max_seq_len if VRAM is exhausted."

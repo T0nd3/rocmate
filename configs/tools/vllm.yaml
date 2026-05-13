@@ -1,0 +1,60 @@
+name: vLLM
+description: High-throughput LLM inference server with continuous batching and PagedAttention.
+homepage: https://github.com/vllm-project/vllm
+
+chips:
+  gfx1100:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 7900 XTX works well. vLLM pre-allocates GPU memory (90 % by default) so 24 GB lets
+      you run 13–34B models. Use --gpu-memory-utilization to tune. Flash-attention is supported
+      via ROCm's CK library.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "python -m venv venv && source venv/bin/activate"
+      - "pip install vllm --extra-index-url https://download.pytorch.org/whl/rocm6.2"
+      - "python -m vllm.entrypoints.openai.api_server --model meta-llama/Llama-3.1-8B-Instruct"
+      - "Verify with: curl http://localhost:8000/v1/models"
+
+  gfx1101:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: RX 7800 XT / RX 7700 XT — works on Linux. 16 GB VRAM limits to ≤13B models.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "Same install as gfx1100. Set --gpu-memory-utilization 0.85 to leave headroom."
+
+  gfx1030:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 6800/6900 — works but slower than RDNA3 cards. PagedAttention works.
+      Flash-attention backend may fall back to a slower kernel.
+    env_vars: {}
+    install_hints:
+      - "pip install vllm --extra-index-url https://download.pytorch.org/whl/rocm6.2"
+
+  gfx1102:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 7600 (8 GB) — vLLM's default memory pre-allocation requires lowering
+      --gpu-memory-utilization to 0.80 or less. Stick to 7B Q4/Q8 models.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "pip install vllm --extra-index-url https://download.pytorch.org/whl/rocm6.2"
+      - "python -m vllm.entrypoints.openai.api_server --model <model> --gpu-memory-utilization 0.80"
+
+  gfx1201:
+    status: partial
+    tested_on_rocm: "7.x"
+    notes: >
+      RX 9070 series — requires ROCm 7.x builds of vLLM. Pre-built wheels may not be
+      available; expect to build from source. Flash-attention support still maturing.
+    env_vars: {}
+    install_hints:
+      - "Build from source: git clone https://github.com/vllm-project/vllm && pip install -e . --extra-index-url https://download.pytorch.org/whl/rocm7.x"

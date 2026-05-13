@@ -1,0 +1,49 @@
+name: Stable Diffusion WebUI
+description: AUTOMATIC1111's browser UI for Stable Diffusion, with ROCm support via PyTorch.
+homepage: https://github.com/AUTOMATIC1111/stable-diffusion-webui
+
+chips:
+  gfx1100:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: >
+      Works on RX 7900 XTX with PyTorch ROCm wheels. SDXL and SD 1.5 run well.
+      Flux.1 requires additional setup (install flux dependencies separately).
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui && cd stable-diffusion-webui"
+      - "Set TORCH_COMMAND before launch: export TORCH_COMMAND='pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.2'"
+      - "Linux launch: ./webui.sh"
+      - "Windows: set TORCH_COMMAND=pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.2 && webui-user.bat"
+
+  gfx1101:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: RX 7800 XT / RX 7700 XT — same setup as gfx1100. 16 GB VRAM; SDXL runs well, Flux.1 tight.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "Same as gfx1100."
+
+  gfx1102:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: RX 7600 — 8 GB VRAM. SD 1.5 works; SDXL needs --medvram or --lowvram flag and is slow.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "Same as gfx1100."
+      - "Launch with: ./webui.sh --medvram"
+
+  gfx1030:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: RX 6800/6900 — works with HSA_OVERRIDE. SDXL slow; SD 1.5 fine. Use --medvram for stability.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "10.3.0"
+    install_hints:
+      - "Same install as gfx1100."
+      - "Launch with: ./webui.sh --medvram"

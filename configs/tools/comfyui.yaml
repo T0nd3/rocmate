@@ -1,0 +1,50 @@
+name: ComfyUI
+description: Node-based UI for Stable Diffusion and other image generation models.
+homepage: https://github.com/comfyanonymous/ComfyUI
+
+chips:
+  gfx1100:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: >
+      Works well on RX 7900 XTX with PyTorch ROCm 6.2+. SDXL runs comfortably in 24 GB VRAM.
+      Flux.1 also works but requires careful memory management.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "Linux: git clone https://github.com/comfyanonymous/ComfyUI && cd ComfyUI"
+      - "python -m venv venv && source venv/bin/activate"
+      - "pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.2"
+      - "pip install -r requirements.txt && python main.py --listen"
+      - "Windows (HIP SDK): pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.2"
+
+  gfx1101:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: RX 7800 XT / RX 7700 XT — same setup as gfx1100. 16 GB VRAM limits Flux.1; SDXL and SD 1.5 run well.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "Same install as gfx1100."
+
+  gfx1102:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: RX 7600 — 8 GB VRAM is tight. SD 1.5 works; SDXL requires --lowvram flag and is slow.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "Same install as gfx1100."
+      - "Launch with: python main.py --lowvram --listen"
+
+  gfx1030:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: SDXL is slow; SD 1.5 works fine. Memory pressure with larger models.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "10.3.0"
+    install_hints:
+      - "Same as gfx1100 install; expect ~3-4x slower SDXL generation."

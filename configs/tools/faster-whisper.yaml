@@ -1,0 +1,35 @@
+name: faster-whisper
+description: Fast Whisper inference using CTranslate2. ROCm support via PyTorch backend.
+homepage: https://github.com/SYSTRAN/faster-whisper
+
+chips:
+  gfx1100:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: >
+      faster-whisper itself targets CUDA; on AMD use the openai-whisper or whisperX
+      route with PyTorch + ROCm, or run faster-whisper on CPU with int8 quantization
+      (still fast for short clips). For GPU on AMD, use openai-whisper-rocm fork.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "pip install torch torchaudio --index-url https://download.pytorch.org/whl/rocm6.2"
+      - "Verify torch.cuda.is_available() returns True (yes, 'cuda' under ROCm)"
+      - "For pure faster-whisper: use device='cpu', compute_type='int8' as fallback"
+
+  gfx1101:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: RX 7800 XT / RX 7700 XT — same PyTorch ROCm approach as gfx1100. Transcription speed similar to gfx1100.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+    install_hints:
+      - "pip install torch torchaudio --index-url https://download.pytorch.org/whl/rocm6.2"
+
+  gfx1030:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: PyTorch ROCm wheels available, but transcription is slower than gfx1100.
+    env_vars: {}
+    install_hints:
+      - "pip install torch torchaudio --index-url https://download.pytorch.org/whl/rocm6.2"

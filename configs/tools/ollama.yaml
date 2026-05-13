@@ -1,0 +1,66 @@
+name: Ollama
+description: Run large language models locally, with built-in ROCm support.
+homepage: https://ollama.com
+
+chips:
+  gfx1100:
+    status: tested
+    tested_on_rocm: "6.3"
+    notes: >
+      Works out of the box on Linux with ROCm 6.x.
+      Tested on RX 7900 XTX (24 GB) running Qwen 2.5 14B and Llama 3.1 8B.
+    env_vars: {}
+    install_hints:
+      - "Linux: curl -fsSL https://ollama.com/install.sh | sh"
+      - "Windows: download the Ollama installer from https://ollama.com/download/windows (ships HIP libs)"
+      - "Verify with: ollama run llama3.1:8b (should hit GPU, not CPU)"
+      - "Watch GPU usage live: watch -n 1 rocm-smi"
+
+  gfx1030:
+    status: tested
+    tested_on_rocm: "6.3"
+    notes: Works on RX 6800/6900 with ROCm 6.x. Some older guides recommend HSA_OVERRIDE — no longer needed.
+    env_vars: {}
+    install_hints:
+      - "curl -fsSL https://ollama.com/install.sh | sh"
+
+  gfx1201:
+    status: partial
+    tested_on_rocm: "7.x"
+    notes: >
+      RX 9070 series needs HIP SDK 7.1+ with gfx120x rocblas libraries.
+      Official Ollama Windows installer ships these as of January 2026.
+    env_vars: {}
+    install_hints:
+      - "On Linux: requires ROCm 7.x — see https://rocm.docs.amd.com"
+      - "On Windows: AMD AI Bundle installer (Adrenalin 26.x+) ships compatible libs."
+
+  gfx1101:
+    status: tested
+    tested_on_rocm: "6.3"
+    notes: RX 7800 XT / RX 7700 XT — works out of the box on Linux with ROCm 6.x, same as gfx1100.
+    env_vars: {}
+    install_hints:
+      - "curl -fsSL https://ollama.com/install.sh | sh"
+
+  gfx1102:
+    status: tested
+    tested_on_rocm: "6.3"
+    notes: RX 7600 — works on Linux with ROCm 6.x. Lower VRAM (8 GB) limits model size; stick to ≤7B Q4.
+    env_vars: {}
+    install_hints:
+      - "curl -fsSL https://ollama.com/install.sh | sh"
+      - "Limit to models ≤7B Q4 due to 8 GB VRAM."
+
+  gfx1034:
+    status: partial
+    tested_on_rocm: "6.3"
+    notes: >
+      RX 5400/5500 series — ROCm does not officially support gfx1034.
+      Force compatibility with HSA_OVERRIDE_GFX_VERSION=10.3.0 (treats card as gfx1030).
+      Token generation is slow but functional for small models.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "10.3.0"
+    install_hints:
+      - "Set HSA_OVERRIDE before launching the Ollama service"
+      - "Limit to small models (≤7B Q4) due to lower memory bandwidth"

@@ -1,0 +1,55 @@
+name: Axolotl
+description: Fine-tuning framework for LLMs supporting LoRA, QLoRA, and full fine-tuning.
+homepage: https://github.com/axolotl-ai-cloud/axolotl
+
+chips:
+  gfx1100:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 7900 XTX (24 GB) handles QLoRA fine-tuning of 7B–13B models comfortably.
+      Flash-attention 2 works via ROCm CK (install separately). bitsandbytes ROCm fork
+      required for quantized training.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "git clone https://github.com/axolotl-ai-cloud/axolotl && cd axolotl"
+      - "pip install torch --index-url https://download.pytorch.org/whl/rocm6.2"
+      - "pip install packaging ninja && pip install flash-attn --no-build-isolation"
+      - "pip install -e '.[deepspeed]'"
+      - "accelerate launch -m axolotl.cli.train examples/llama-3/qlora.yml"
+
+  gfx1101:
+    status: tested
+    tested_on_rocm: "6.2"
+    notes: RX 7800 XT / RX 7700 XT — QLoRA of 7B models fits in 16 GB. Same setup as gfx1100.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "Same install as gfx1100. Use gradient_checkpointing: true in your YAML for memory savings."
+
+  gfx1030:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 6800/6900 — QLoRA of 7B works. Full fine-tuning requires gradient checkpointing.
+      Flash-attention fallback path is slower than RDNA3.
+    env_vars: {}
+    install_hints:
+      - "Same install as gfx1100."
+      - "Add gradient_checkpointing: true and micro_batch_size: 1 to your config."
+
+  gfx1102:
+    status: partial
+    tested_on_rocm: "6.2"
+    notes: >
+      RX 7600 (8 GB) — QLoRA of 7B is tight. Use per_device_train_batch_size: 1 and
+      gradient_checkpointing. Offload optimizer states to CPU if OOM.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.0.0"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "Same install as gfx1100."
+      - "Config: micro_batch_size: 1, gradient_checkpointing: true, optimizer: adamw_8bit"
