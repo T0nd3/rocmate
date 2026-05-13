@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import subprocess
 from dataclasses import dataclass
 from enum import Enum
@@ -59,8 +60,8 @@ def fix_env_in_profile(name: str, value: str) -> FixResult:
 
 def fix_sudo_command(check_name: str, cmd: str) -> FixResult:
     # Strip compound commands (&&) — e.g. `newgrp` requires a new shell session
-    first_cmd = cmd.split("&&")[0].strip()
-    result = subprocess.run(first_cmd, shell=True, check=False)
+    first_cmd = os.path.expandvars(cmd.split("&&")[0].strip())
+    result = subprocess.run(shlex.split(first_cmd), shell=False, check=False)
     if result.returncode == 0:
         return FixResult(check_name, True, "Command succeeded — log out and back in to apply")
     return FixResult(check_name, False, f"Command failed (exit {result.returncode}): {first_cmd}")

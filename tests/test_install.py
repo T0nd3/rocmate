@@ -43,9 +43,11 @@ def test_plan_extracts_pip_commands():
     assert any("pip install" in cmd for cmd in plan.commands)
 
 
-def test_plan_extracts_git_commands():
+def test_plan_puts_compound_cmake_in_hints():
     plan = install.build_plan("llama-cpp", "gfx1100")
-    assert any(cmd.startswith("cmake") for cmd in plan.commands)
+    # cmake hints use && so they are display-only; not auto-executed
+    assert any("cmake" in h for h in plan.hints)
+    assert not any("cmake" in cmd for cmd in plan.commands)
 
 
 def test_plan_raises_for_unknown_tool():

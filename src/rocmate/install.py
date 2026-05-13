@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shlex
 import subprocess
 from dataclasses import dataclass, field
 
@@ -33,7 +34,10 @@ _EXECUTABLE_PREFIXES = (
 
 
 def _is_executable(hint: str) -> bool:
-    return any(hint.strip().startswith(p) for p in _EXECUTABLE_PREFIXES)
+    stripped = hint.strip()
+    if "&&" in stripped:
+        return False
+    return any(stripped.startswith(p) for p in _EXECUTABLE_PREFIXES)
 
 
 @dataclass
@@ -132,7 +136,7 @@ def execute(plan: InstallPlan) -> None:
 
     try:
         for cmd in plan.commands:
-            result = subprocess.run(cmd, shell=True, check=False)
+            result = subprocess.run(shlex.split(cmd), shell=False, check=False)
             if result.returncode != 0:
                 raise InstallError(f"Command failed (exit {result.returncode}): {cmd}")
     except InstallError:
