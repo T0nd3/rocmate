@@ -36,18 +36,20 @@ For CLI or library changes, please open an issue first to discuss the approach. 
 ## Development setup
 
 ```bash
-git clone https://github.com/yourhandle/rocmate
+git clone https://github.com/T0nd3/rocmate
 cd rocmate
 python -m venv venv && source venv/bin/activate
 pip install -e ".[dev]"
 pytest
 ruff check src tests
+ruff format src tests
 ```
 
 ## Code style
 
 - Python 3.11+, type hints everywhere
-- `ruff` for linting
+- `ruff check` for linting, `ruff format` for formatting (replaces flake8 + black + isort)
+- CI enforces both — run them locally before pushing
 - Keep CLI output friendly and copy-pasteable
 
 ## Code of Conduct
