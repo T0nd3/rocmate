@@ -8,7 +8,6 @@ from rich.console import Console
 
 from rocmate import configs
 
-
 # --- list_tools ---
 
 def test_list_tools_returns_all_tools():

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from importlib.resources import files
 from pathlib import Path
-from typing import Optional
 
 import yaml
 from pydantic import BaseModel, Field
@@ -14,8 +13,8 @@ from rich.table import Table
 
 class ChipSupport(BaseModel):
     status: str  # "tested" | "partial" | "broken"
-    tested_on_rocm: Optional[str] = None  # e.g. "6.2", "6.3" — None = unknown
-    notes: Optional[str] = None
+    tested_on_rocm: str | None = None  # e.g. "6.2", "6.3" — None = unknown
+    notes: str | None = None
     env_vars: dict[str, str] = Field(default_factory=dict)
     install_hints: list[str] = Field(default_factory=list)
 
@@ -23,7 +22,7 @@ class ChipSupport(BaseModel):
 class ToolConfig(BaseModel):
     name: str
     description: str
-    homepage: Optional[str] = None
+    homepage: str | None = None
     chips: dict[str, ChipSupport] = Field(default_factory=dict)
 
 

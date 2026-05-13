@@ -6,7 +6,6 @@ import subprocess
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Optional
 
 from rocmate.doctor import CheckResult
 
@@ -62,11 +61,11 @@ def fix_sudo_command(check_name: str, cmd: str) -> FixResult:
     first_cmd = cmd.split("&&")[0].strip()
     result = subprocess.run(first_cmd, shell=True, check=False)
     if result.returncode == 0:
-        return FixResult(check_name, True, f"Command succeeded — you may need to log out and back in")
+        return FixResult(check_name, True, "Command succeeded — log out and back in to apply")
     return FixResult(check_name, False, f"Command failed (exit {result.returncode}): {first_cmd}")
 
 
-def apply_fix(check: CheckResult) -> Optional[FixResult]:
+def apply_fix(check: CheckResult) -> FixResult | None:
     if not check.fix:
         return None
 

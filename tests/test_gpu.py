@@ -6,7 +6,6 @@ from unittest.mock import mock_open, patch
 
 from rocmate import gpu
 
-
 # Minimal rocminfo outputs that match the parser's regex
 _ROCMINFO_ONE_GPU = """\
 ROCk module is loaded

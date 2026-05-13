@@ -8,14 +8,13 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass(frozen=True)
 class GpuInfo:
     name: str
     gfx_version: str  # e.g. "gfx1100"
-    vram_mb: Optional[int]
+    vram_mb: int | None
 
 
 # Ordered most-specific first so "RX 7900 XTX" matches before a hypothetical
@@ -35,14 +34,14 @@ _NAME_TO_GFX: list[tuple[str, str]] = [
 ]
 
 
-def _gfx_from_name(name: str) -> Optional[str]:
+def _gfx_from_name(name: str) -> str | None:
     for substring, gfx in _NAME_TO_GFX:
         if substring in name:
             return gfx
     return None
 
 
-def _run(cmd: list[str]) -> Optional[str]:
+def _run(cmd: list[str]) -> str | None:
     if not shutil.which(cmd[0]):
         return None
     try:
@@ -147,7 +146,7 @@ def detect_amd_gpus() -> list[GpuInfo]:
     return _detect_amd_gpus_linux()
 
 
-def get_rocm_version() -> Optional[str]:
+def get_rocm_version() -> str | None:
     """Return ROCm / HIP version string, or None if not found."""
     if sys.platform == "win32":
         hip_path = os.environ.get("HIP_PATH")

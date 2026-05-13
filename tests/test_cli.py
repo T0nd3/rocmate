@@ -1,7 +1,7 @@
 """Tests for CLI commands."""
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from typer.testing import CliRunner
 
@@ -217,7 +217,9 @@ class TestDoctorFixFlag:
 
     def test_fix_flag_calls_apply_fix_when_confirmed(self):
         with patch("rocmate.fixer.apply_fix") as mock_apply:
-            mock_apply.return_value = FixResult("env:HSA_OVERRIDE_GFX_VERSION", True, "Added to ~/.bashrc")
+            mock_apply.return_value = FixResult(
+                "env:HSA_OVERRIDE_GFX_VERSION", True, "Added to ~/.bashrc"
+            )
             self._with_fixable_check(["doctor", "--fix"], input="y\n")
         mock_apply.assert_called_once()
 
@@ -228,6 +230,8 @@ class TestDoctorFixFlag:
 
     def test_fix_flag_shows_success_after_apply(self):
         with patch("rocmate.fixer.apply_fix") as mock_apply:
-            mock_apply.return_value = FixResult("env:HSA_OVERRIDE_GFX_VERSION", True, "Added to ~/.bashrc")
+            mock_apply.return_value = FixResult(
+                "env:HSA_OVERRIDE_GFX_VERSION", True, "Added to ~/.bashrc"
+            )
             result = self._with_fixable_check(["doctor", "--fix"], input="y\n")
         assert "bashrc" in result.output.lower() or "added" in result.output.lower()

@@ -5,13 +5,11 @@ import io
 import os
 from unittest.mock import MagicMock, patch
 
-import pytest
 from rich.console import Console
 
 from rocmate import doctor
 from rocmate.doctor import CheckResult, DiagnosticReport, Status
 from rocmate.gpu import GpuInfo
-
 
 # --- DiagnosticReport.has_blocking_issues ---
 

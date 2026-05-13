@@ -1,8 +1,6 @@
 """rocmate command-line interface."""
 from __future__ import annotations
 
-from typing import Optional
-
 import typer
 from rich.console import Console
 
@@ -23,15 +21,19 @@ console = Console()
 
 _STATUS_ICON = {
     "tested": "[green]✅ tested[/green]",
-    "partial": "[yellow]🟡 partial[/yellow]",
+    "partial": "[yellow]\U0001f7e1 partial[/yellow]",
     "broken": "[red]❌ broken[/red]",
 }
 
 
 @app.command()
 def doctor(
-    tool: Optional[str] = typer.Option(None, "--tool", help="Also show compatibility for a specific tool."),
-    fix: bool = typer.Option(False, "--fix", help="Interactively apply fixes for detected issues."),
+    tool: str | None = typer.Option(
+        None, "--tool", help="Also show compatibility for a specific tool."
+    ),
+    fix: bool = typer.Option(
+        False, "--fix", help="Interactively apply fixes for detected issues."
+    ),
 ) -> None:
     """Check whether the system is ready for AI workloads on an AMD GPU."""
     result = doctor_module.run()
@@ -43,11 +45,13 @@ def doctor(
         except FileNotFoundError:
             console.print(f"[red]No config for tool '{tool}'.[/red]")
             console.print(f"Available tools: {', '.join(configs_module.list_tools())}")
-            raise typer.Exit(code=1)
+            raise typer.Exit(code=1) from None
 
         console.print(f"\n[bold]Tool compatibility: {cfg.name}[/bold]")
         if not result.gpu_info:
-            console.print("[yellow]  No AMD GPU detected — cannot check tool compatibility.[/yellow]")
+            console.print(
+                "[yellow]  No AMD GPU detected — cannot check tool compatibility.[/yellow]"
+            )
         else:
             for gpu_info in result.gpu_info:
                 chip = gpu_info.gfx_version
@@ -86,7 +90,7 @@ def show(tool: str = typer.Argument(..., help="Tool name, e.g. 'ollama'")) -> No
     except FileNotFoundError:
         console.print(f"[red]No config available for tool '{tool}'.[/red]")
         console.print(f"Available tools: {', '.join(configs_module.list_tools())}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
     configs_module.render(config, console)
 
 
@@ -118,10 +122,10 @@ def install(
     except FileNotFoundError:
         console.print(f"[red]No config for tool '{tool}'.[/red]")
         console.print(f"Available tools: {', '.join(configs_module.list_tools())}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
     except KeyError:
         console.print(f"[yellow]No install config for {chip} + {tool}.[/yellow]")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     if docker:
         console.print(install_module.render_docker_compose(plan))
@@ -135,7 +139,7 @@ def install(
             console.print("[green]Done.[/green]")
         except InstallError as e:
             console.print(f"[red]Install failed:[/red] {e}")
-            raise typer.Exit(code=1)
+            raise typer.Exit(code=1) from None
 
 
 if __name__ == "__main__":

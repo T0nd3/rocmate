@@ -3,13 +3,12 @@ from __future__ import annotations
 
 import io
 import os
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from rich.console import Console
 
 from rocmate import install
-
 
 # ---------------------------------------------------------------------------
 # build_plan

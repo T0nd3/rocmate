@@ -12,7 +12,6 @@ except ImportError:
     _HAS_GRP = False
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
 
 from rich.console import Console
 
@@ -30,13 +29,13 @@ class CheckResult:
     name: str
     status: Status
     message: str
-    fix: Optional[str] = None
+    fix: str | None = None
 
 
 @dataclass
 class DiagnosticReport:
     gpu_info: list[gpu_module.GpuInfo] = field(default_factory=list)
-    rocm_version: Optional[str] = None
+    rocm_version: str | None = None
     checks: list[CheckResult] = field(default_factory=list)
 
     def has_blocking_issues(self) -> bool:
@@ -84,8 +83,8 @@ def _check_env_vars(gpu_info: list[gpu_module.GpuInfo]) -> list[CheckResult]:
         return results
     # Only suggest HSA_OVERRIDE for known-tricky chips
     tricky_chips = {"gfx1034", "gfx1031", "gfx1032"}
-    if any(g.gfx_version in tricky_chips for g in gpu_info):
-        if "HSA_OVERRIDE_GFX_VERSION" not in os.environ:
+    has_tricky = any(g.gfx_version in tricky_chips for g in gpu_info)
+    if has_tricky and "HSA_OVERRIDE_GFX_VERSION" not in os.environ:
             results.append(
                 CheckResult(
                     name="env:HSA_OVERRIDE_GFX_VERSION",
@@ -97,7 +96,7 @@ def _check_env_vars(gpu_info: list[gpu_module.GpuInfo]) -> list[CheckResult]:
     return results
 
 
-def _run_check(cmd: list[str]) -> Optional[str]:
+def _run_check(cmd: list[str]) -> str | None:
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=10, check=False)
         return proc.stdout if proc.returncode == 0 else None
@@ -216,6 +215,8 @@ def render(report: DiagnosticReport, console: Console) -> None:
     if fails:
         console.print(f"[red]{fails} blocking issue(s).[/red] Fix these to run AI workloads.")
     elif warns:
-        console.print(f"[yellow]{warns} warning(s).[/yellow] System should work but optimisations recommended.")
+        console.print(
+            f"[yellow]{warns} warning(s).[/yellow] System should work but optimisations recommended."  # noqa: E501
+        )
     else:
         console.print("[green]All checks passed.[/green] Your system is ready.")

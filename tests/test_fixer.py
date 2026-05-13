@@ -2,14 +2,10 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from rocmate import fixer
 from rocmate.doctor import CheckResult, Status
-
 
 # --- classify_fix ---
 
@@ -18,7 +14,8 @@ def test_classify_export_returns_env_profile():
 
 
 def test_classify_sudo_returns_sudo_command():
-    assert fixer.classify_fix("sudo usermod -aG render $USER && newgrp render") == fixer.FixKind.SUDO_COMMAND
+    cmd = "sudo usermod -aG render $USER && newgrp render"
+    assert fixer.classify_fix(cmd) == fixer.FixKind.SUDO_COMMAND
 
 
 def test_classify_url_returns_manual():
@@ -30,7 +27,8 @@ def test_classify_apt_returns_sudo_command():
 
 
 def test_classify_instruction_returns_manual():
-    assert fixer.classify_fix("Ensure /dev/kfd and /dev/dri are passed to containers") == fixer.FixKind.MANUAL
+    hint = "Ensure /dev/kfd and /dev/dri are passed to containers"
+    assert fixer.classify_fix(hint) == fixer.FixKind.MANUAL
 
 
 # --- _detect_shell_profile ---

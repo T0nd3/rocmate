@@ -4,7 +4,6 @@ from __future__ import annotations
 import os
 import subprocess
 from dataclasses import dataclass, field
-from typing import Optional
 
 from rich.console import Console
 from rich.panel import Panel
@@ -122,7 +121,7 @@ def execute(plan: InstallPlan) -> None:
     Raises InstallError on non-zero exit.
     """
     # Snapshot current values for rollback
-    snapshot: dict[str, Optional[str]] = {
+    snapshot: dict[str, str | None] = {
         k: os.environ.get(k) for k in plan.env_vars
     }
 

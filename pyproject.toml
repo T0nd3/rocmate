@@ -55,6 +55,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+ignore = ["UP042"]  # StrEnum not available in Python 3.11 stdlib without compat shim
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
