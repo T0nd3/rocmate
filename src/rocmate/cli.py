@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version
+
 import typer
 from rich.console import Console
 
@@ -18,6 +20,23 @@ app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
 )
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        console.print(f"rocmate {version('rocmate')}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _main(
+    _version: bool = typer.Option(
+        None, "--version", callback=_version_callback, is_eager=True, help="Show version and exit."
+    ),
+) -> None:
+    pass
+
+
 console = Console()
 
 _STATUS_ICON = {
@@ -82,7 +101,10 @@ def doctor(
 
 
 @app.command()
-def show(tool: str = typer.Argument(..., help="Tool name, e.g. 'ollama'")) -> None:
+def show(
+    tool: str = typer.Argument(..., help="Tool name, e.g. 'ollama'"),
+    chip: str | None = typer.Option(None, "--chip", help="Filter to a specific chip, e.g. gfx1100"),
+) -> None:
     """Show the tested configuration for a given tool."""
     try:
         config = configs_module.load_tool(tool)
@@ -90,6 +112,14 @@ def show(tool: str = typer.Argument(..., help="Tool name, e.g. 'ollama'")) -> No
         console.print(f"[red]No config available for tool '{tool}'.[/red]")
         console.print(f"Available tools: {', '.join(configs_module.list_tools())}")
         raise typer.Exit(code=1) from None
+
+    if chip is not None:
+        if chip not in config.chips:
+            console.print(f"[red]No data for chip '{chip}' in tool '{tool}'.[/red]")
+            console.print(f"Available chips: {', '.join(config.chips)}")
+            raise typer.Exit(code=1) from None
+        config = config.model_copy(update={"chips": {chip: config.chips[chip]}})
+
     configs_module.render(config, console)
 
 
@@ -100,6 +130,25 @@ def list_tools() -> None:
     console.print(f"[bold]Available tools ({len(tools)}):[/bold]")
     for t in tools:
         console.print(f"  • {t}")
+
+
+@app.command()
+def search(keyword: str = typer.Argument(..., help="Keyword to search for.")) -> None:
+    """Search tools by name or description."""
+    keyword_lower = keyword.lower()
+    matches = [
+        t
+        for t in configs_module.list_tools()
+        if keyword_lower in t.lower()
+        or keyword_lower in configs_module.load_tool(t).description.lower()
+    ]
+    if not matches:
+        console.print(f"[yellow]No tools found matching '{keyword}'.[/yellow]")
+        raise typer.Exit(code=1)
+    console.print(f"[bold]Results for '{keyword}':[/bold]")
+    for t in matches:
+        cfg = configs_module.load_tool(t)
+        console.print(f"  • [bold]{t}[/bold] — {cfg.description}")
 
 
 @app.command()

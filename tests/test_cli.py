@@ -14,6 +14,23 @@ from rocmate.gpu import GpuInfo
 runner = CliRunner()
 
 
+# --- rocmate --version ---
+
+
+def test_version_flag_exits_zero():
+    assert runner.invoke(app, ["--version"]).exit_code == 0
+
+
+def test_version_flag_shows_version_number():
+    result = runner.invoke(app, ["--version"])
+    assert "0." in result.output
+
+
+def test_version_flag_shows_rocmate():
+    result = runner.invoke(app, ["--version"])
+    assert "rocmate" in result.output.lower()
+
+
 # --- rocmate list ---
 
 
@@ -57,6 +74,39 @@ def test_show_displays_rocm_version():
 
 def test_show_exits_nonzero_for_unknown_tool():
     result = runner.invoke(app, ["show", "does-not-exist"])
+    assert result.exit_code != 0
+
+
+def test_show_chip_filter_shows_only_that_chip():
+    result = runner.invoke(app, ["show", "ollama", "--chip", "gfx1100"])
+    assert "gfx1100" in result.output
+    assert "gfx1030" not in result.output
+
+
+def test_show_chip_filter_exits_nonzero_for_unknown_chip():
+    result = runner.invoke(app, ["show", "ollama", "--chip", "gfx9999"])
+    assert result.exit_code != 0
+
+
+# --- rocmate search ---
+
+
+def test_search_exits_zero():
+    assert runner.invoke(app, ["search", "llm"]).exit_code == 0
+
+
+def test_search_finds_ollama_by_keyword():
+    result = runner.invoke(app, ["search", "ollama"])
+    assert "ollama" in result.output.lower()
+
+
+def test_search_finds_by_description_keyword():
+    result = runner.invoke(app, ["search", "whisper"])
+    assert "faster-whisper" in result.output.lower()
+
+
+def test_search_no_results_exits_nonzero():
+    result = runner.invoke(app, ["search", "zzznomatch"])
     assert result.exit_code != 0
 
 
