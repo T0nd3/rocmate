@@ -12,7 +12,7 @@
 pip install rocmate
 ```
 
-![rocmate doctor](docs/rocmate-doctor.png)
+![rocmate doctor](https://raw.githubusercontent.com/T0nd3/rocmate/main/docs/rocmate-doctor.png)
 
 ## Why?
 
