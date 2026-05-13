@@ -40,8 +40,8 @@ dev = [
 rocmate = "rocmate.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/tonde/rocmate"
-Issues = "https://github.com/tonde/rocmate/issues"
+Homepage = "https://github.com/T0nd3/rocmate"
+Issues = "https://github.com/T0nd3/rocmate/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rocmate"]

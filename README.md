@@ -58,7 +58,7 @@ Run `rocmate show <tool>` for chip-specific ENV vars, install hints, and tested 
 
 ## Status
 
-Actively maintained by [@tonde](https://github.com/tonde) on an RX 7900 XTX. Contributions for other AMD chips are very welcome — one YAML file, five minutes. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Actively maintained by [@T0nd3](https://github.com/T0nd3) on an RX 7900 XTX. Contributions for other AMD chips are very welcome — one YAML file, five minutes. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
