@@ -1,5 +1,9 @@
 # rocmate
 
+[![PyPI](https://img.shields.io/pypi/v/rocmate)](https://pypi.org/project/rocmate/)
+[![CI](https://github.com/T0nd3/rocmate/actions/workflows/ci.yml/badge.svg)](https://github.com/T0nd3/rocmate/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/T0nd3/rocmate)](LICENSE)
+
 > Get AMD GPUs running with AI tools — without the rabbit hole.
 
 `rocmate` is a curated compatibility index and CLI for running modern AI workloads on AMD GPUs via ROCm. It tells you what works on your specific card, what to set, and what to avoid — based on configurations that real users have tested.

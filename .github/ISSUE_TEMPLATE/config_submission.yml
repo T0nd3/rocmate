@@ -1,0 +1,92 @@
+name: Submit a tested config
+description: Share a working AMD GPU + tool combination
+labels: ["config"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing! One config helps everyone with the same chip.
+        Takes ~5 minutes. You don't need to write code — just fill this in.
+
+  - type: dropdown
+    id: tool
+    attributes:
+      label: Tool
+      options:
+        - Ollama
+        - ComfyUI
+        - faster-whisper
+        - llama.cpp
+        - Stable Diffusion WebUI
+        - vLLM
+        - Axolotl
+        - ExLlamaV2
+        - Other (specify in notes)
+    validations:
+      required: true
+
+  - type: input
+    id: chip
+    attributes:
+      label: GPU chip (gfx version)
+      description: Run `rocminfo | grep Name` or `rocmate doctor`
+      placeholder: "e.g. gfx1100"
+    validations:
+      required: true
+
+  - type: input
+    id: gpu_name
+    attributes:
+      label: GPU model name
+      placeholder: "e.g. AMD Radeon RX 7900 XTX"
+    validations:
+      required: true
+
+  - type: input
+    id: rocm_version
+    attributes:
+      label: ROCm / HIP version
+      description: Run `rocmate doctor` to find this
+      placeholder: "e.g. 6.3.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - "✅ tested — works out of the box"
+        - "🟡 partial — works with workarounds"
+        - "❌ broken — does not work"
+    validations:
+      required: true
+
+  - type: textarea
+    id: env_vars
+    attributes:
+      label: Required ENV vars (if any)
+      placeholder: |
+        HSA_OVERRIDE_GFX_VERSION=10.3.0
+        PYTORCH_HIP_ALLOC_CONF=expandable_segments:True
+    validations:
+      required: false
+
+  - type: textarea
+    id: install_hints
+    attributes:
+      label: Install steps
+      description: Paste the exact commands that worked for you
+      placeholder: |
+        pip install torch --index-url https://download.pytorch.org/whl/rocm6.2
+        pip install vllm
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes / observations
+      description: Anything useful — model sizes, performance, quirks, OS
+    validations:
+      required: false

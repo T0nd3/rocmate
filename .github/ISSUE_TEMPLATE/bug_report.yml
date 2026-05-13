@@ -1,0 +1,36 @@
+name: Bug report
+description: Something in rocmate itself is broken
+labels: ["bug"]
+body:
+  - type: input
+    id: command
+    attributes:
+      label: Command that failed
+      placeholder: "rocmate doctor --tool ollama"
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Output / error message
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: rocmate version
+      description: Run `rocmate --version`
+      placeholder: "0.4.2"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: "Ubuntu 24.04 / Windows 11"
+    validations:
+      required: true
