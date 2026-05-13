@@ -2,6 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/rocmate)](https://pypi.org/project/rocmate/)
 [![CI](https://github.com/T0nd3/rocmate/actions/workflows/ci.yml/badge.svg)](https://github.com/T0nd3/rocmate/actions/workflows/ci.yml)
+[![Website](https://img.shields.io/badge/matrix-t0nd3.github.io%2Frocmate-blue)](https://t0nd3.github.io/rocmate/)
 [![License: MIT](https://img.shields.io/github/license/T0nd3/rocmate)](LICENSE)
 
 > Get AMD GPUs running with AI tools — without the rabbit hole.
@@ -29,8 +30,12 @@ pip install rocmate
 # Check your system
 rocmate doctor
 
-# Show the tested config for a tool
+# Show the tested config for a tool (optionally filter by chip)
 rocmate show ollama
+rocmate show ollama --chip gfx1100
+
+# Search tools by keyword
+rocmate search llm
 
 # Install a tool with the right ENV vars
 rocmate install ollama
@@ -40,6 +45,8 @@ rocmate doctor --fix
 ```
 
 ## Supported tools
+
+→ **[Live compatibility matrix](https://t0nd3.github.io/rocmate/)** — auto-updated on every commit.
 
 | Tool | gfx1100<br>RX 7900 XT/XTX | gfx1101<br>RX 7800/7700 XT | gfx1102<br>RX 7600 | gfx1030<br>RX 6800/6900 | gfx1201<br>RX 9070 |
 |------|:-:|:-:|:-:|:-:|:-:|
@@ -64,12 +71,14 @@ Actively maintained by [@T0nd3](https://github.com/T0nd3) on an RX 7900 XTX. Con
 
 - [x] `rocmate doctor` — system diagnostic (GPU, ROCm, groups, Docker, Vulkan)
 - [x] `rocmate show <tool>` — display tested config per chip
+- [x] `rocmate show <tool> --chip <gfx>` — filter to a single chip
 - [x] `rocmate list` — list all supported tools
+- [x] `rocmate search <keyword>` — search tools by name or description
 - [x] `rocmate install <tool>` — plan and execute install with correct ENV vars
 - [x] `rocmate doctor --tool <name>` — tool-specific compatibility check
 - [x] `rocmate doctor --fix` — interactively apply fixes for detected issues
 - [x] Windows / HIP SDK support (GPU detection via hipinfo + WMI fallback)
-- [ ] Web-facing compatibility matrix
+- [x] Web-facing compatibility matrix (auto-deployed via GitHub Pages)
 
 ## Non-goals
 
