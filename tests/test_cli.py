@@ -1,4 +1,5 @@
 """Tests for CLI commands."""
+
 from __future__ import annotations
 
 from unittest.mock import patch
@@ -14,6 +15,7 @@ runner = CliRunner()
 
 
 # --- rocmate list ---
+
 
 def test_list_exits_zero():
     assert runner.invoke(app, ["list"]).exit_code == 0
@@ -32,6 +34,7 @@ def test_list_shows_tool_count():
 
 
 # --- rocmate show ---
+
 
 def test_show_exits_zero_for_known_tool():
     assert runner.invoke(app, ["show", "ollama"]).exit_code == 0
@@ -64,9 +67,12 @@ def test_show_unknown_tool_suggests_available():
 
 # --- rocmate doctor ---
 
+
 def test_doctor_exits_one_without_rocm():
-    with patch("rocmate.gpu.detect_amd_gpus", return_value=[]), \
-         patch("rocmate.gpu.get_rocm_version", return_value=None):
+    with (
+        patch("rocmate.gpu.detect_amd_gpus", return_value=[]),
+        patch("rocmate.gpu.get_rocm_version", return_value=None),
+    ):
         result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 1
 
@@ -78,18 +84,22 @@ def test_doctor_produces_output():
 
 def test_doctor_exits_zero_when_system_ok():
     gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
-    with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]), \
-         patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"), \
-         patch("rocmate.doctor._check_groups", return_value=[]):
+    with (
+        patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]),
+        patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"),
+        patch("rocmate.doctor._check_groups", return_value=[]),
+    ):
         result = runner.invoke(app, ["doctor"])
     assert result.exit_code == 0
 
 
 # --- rocmate install ---
 
+
 class TestInstallCommand:
     def _with_gpu(self, args: list[str], input: str = "n\n") -> object:
         from rocmate.gpu import GpuInfo
+
         gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
         with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]):
             return runner.invoke(app, args, input=input)
@@ -133,21 +143,26 @@ class TestInstallCommand:
 
 def test_doctor_shows_gpu_name_when_detected():
     gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
-    with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]), \
-         patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"), \
-         patch("rocmate.doctor._check_groups", return_value=[]):
+    with (
+        patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]),
+        patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"),
+        patch("rocmate.doctor._check_groups", return_value=[]),
+    ):
         result = runner.invoke(app, ["doctor"])
     assert "RX 7900 XTX" in result.output
 
 
 # --- rocmate doctor --tool ---
 
+
 class TestDoctorToolFlag:
     def _doctor_with_gpu(self, args: list[str]) -> object:
         gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
-        with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]), \
-             patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"), \
-             patch("rocmate.doctor._check_groups", return_value=[]):
+        with (
+            patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]),
+            patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"),
+            patch("rocmate.doctor._check_groups", return_value=[]),
+        ):
             return runner.invoke(app, args)
 
     def test_doctor_tool_exits_zero_for_known_tool(self):
@@ -171,36 +186,44 @@ class TestDoctorToolFlag:
         assert "tested" in result.output.lower()
 
     def test_doctor_tool_warns_when_no_gpu_detected(self):
-        with patch("rocmate.gpu.detect_amd_gpus", return_value=[]), \
-             patch("rocmate.gpu.get_rocm_version", return_value=None):
+        with (
+            patch("rocmate.gpu.detect_amd_gpus", return_value=[]),
+            patch("rocmate.gpu.get_rocm_version", return_value=None),
+        ):
             result = runner.invoke(app, ["doctor", "--tool", "ollama"])
         assert result.exit_code != 0
 
 
 # --- rocmate doctor --fix ---
 
+
 class TestDoctorFixFlag:
     def _all_ok(self, args: list[str], input: str = "") -> object:
         gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
-        with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]), \
-             patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"), \
-             patch("rocmate.doctor._check_groups", return_value=[]), \
-             patch("rocmate.doctor._check_docker", return_value=[]), \
-             patch("rocmate.doctor._check_vulkan", return_value=[]):
+        with (
+            patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]),
+            patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"),
+            patch("rocmate.doctor._check_groups", return_value=[]),
+            patch("rocmate.doctor._check_docker", return_value=[]),
+            patch("rocmate.doctor._check_vulkan", return_value=[]),
+        ):
             return runner.invoke(app, args, input=input)
 
     def _with_fixable_check(self, args: list[str], input: str = "n\n") -> object:
         gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
         warn_check = CheckResult(
-            "env:HSA_OVERRIDE_GFX_VERSION", Status.WARN,
+            "env:HSA_OVERRIDE_GFX_VERSION",
+            Status.WARN,
             "HSA_OVERRIDE_GFX_VERSION not set",
             fix="export HSA_OVERRIDE_GFX_VERSION=10.3.0",
         )
-        with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]), \
-             patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"), \
-             patch("rocmate.doctor._check_groups", return_value=[]), \
-             patch("rocmate.doctor._check_docker", return_value=[]), \
-             patch("rocmate.doctor._check_vulkan", return_value=[warn_check]):
+        with (
+            patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]),
+            patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"),
+            patch("rocmate.doctor._check_groups", return_value=[]),
+            patch("rocmate.doctor._check_docker", return_value=[]),
+            patch("rocmate.doctor._check_vulkan", return_value=[warn_check]),
+        ):
             return runner.invoke(app, args, input=input)
 
     def test_fix_flag_shows_nothing_to_fix_when_all_ok(self):

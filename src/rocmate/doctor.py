@@ -1,4 +1,5 @@
 """System diagnostic checks."""
+
 from __future__ import annotations
 
 import os
@@ -7,6 +8,7 @@ import subprocess
 
 try:
     import grp
+
     _HAS_GRP = True
 except ImportError:
     _HAS_GRP = False
@@ -85,14 +87,14 @@ def _check_env_vars(gpu_info: list[gpu_module.GpuInfo]) -> list[CheckResult]:
     tricky_chips = {"gfx1034", "gfx1031", "gfx1032"}
     has_tricky = any(g.gfx_version in tricky_chips for g in gpu_info)
     if has_tricky and "HSA_OVERRIDE_GFX_VERSION" not in os.environ:
-            results.append(
-                CheckResult(
-                    name="env:HSA_OVERRIDE_GFX_VERSION",
-                    status=Status.WARN,
-                    message="HSA_OVERRIDE_GFX_VERSION not set",
-                    fix="export HSA_OVERRIDE_GFX_VERSION=10.3.0",
-                )
+        results.append(
+            CheckResult(
+                name="env:HSA_OVERRIDE_GFX_VERSION",
+                status=Status.WARN,
+                message="HSA_OVERRIDE_GFX_VERSION not set",
+                fix="export HSA_OVERRIDE_GFX_VERSION=10.3.0",
             )
+        )
     return results
 
 
@@ -106,42 +108,57 @@ def _run_check(cmd: list[str]) -> str | None:
 
 def _check_docker() -> list[CheckResult]:
     if not shutil.which("docker"):
-        return [CheckResult(
-            name="docker",
-            status=Status.WARN,
-            message="docker not installed — GPU passthrough not verifiable",
-        )]
-    output = _run_check([
-        "docker", "run", "--rm",
-        "--device=/dev/kfd", "--device=/dev/dri",
-        "alpine", "ls", "/dev/kfd",
-    ])
+        return [
+            CheckResult(
+                name="docker",
+                status=Status.WARN,
+                message="docker not installed — GPU passthrough not verifiable",
+            )
+        ]
+    output = _run_check(
+        [
+            "docker",
+            "run",
+            "--rm",
+            "--device=/dev/kfd",
+            "--device=/dev/dri",
+            "alpine",
+            "ls",
+            "/dev/kfd",
+        ]
+    )
     if output is not None:
         return [CheckResult("docker:gpu", Status.OK, "Docker GPU passthrough accessible")]
-    return [CheckResult(
-        name="docker:gpu",
-        status=Status.WARN,
-        message="Docker installed but GPU passthrough not verified",
-        fix="Ensure /dev/kfd and /dev/dri are passed to containers and user is in 'docker' group",
-    )]
+    return [
+        CheckResult(
+            name="docker:gpu",
+            status=Status.WARN,
+            message="Docker installed but GPU passthrough not verified",
+            fix="Ensure /dev/kfd and /dev/dri are passed to containers and user is in 'docker' group",  # noqa: E501
+        )
+    ]
 
 
 def _check_vulkan() -> list[CheckResult]:
     if not shutil.which("vulkaninfo"):
-        return [CheckResult(
-            name="vulkan",
-            status=Status.WARN,
-            message="vulkaninfo not installed — Vulkan support not verifiable",
-        )]
+        return [
+            CheckResult(
+                name="vulkan",
+                status=Status.WARN,
+                message="vulkaninfo not installed — Vulkan support not verifiable",
+            )
+        ]
     output = _run_check(["vulkaninfo", "--summary"])
     if output and "AMD" in output:
         return [CheckResult("vulkan", Status.OK, "Vulkan: AMD device found")]
-    return [CheckResult(
-        name="vulkan",
-        status=Status.WARN,
-        message="Vulkan installed but no AMD device found in vulkaninfo output",
-        fix="Install AMD Vulkan driver: sudo apt install mesa-vulkan-drivers",
-    )]
+    return [
+        CheckResult(
+            name="vulkan",
+            status=Status.WARN,
+            message="Vulkan installed but no AMD device found in vulkaninfo output",
+            fix="Install AMD Vulkan driver: sudo apt install mesa-vulkan-drivers",
+        )
+    ]
 
 
 def run() -> DiagnosticReport:

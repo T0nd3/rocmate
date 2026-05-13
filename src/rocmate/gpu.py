@@ -1,4 +1,5 @@
 """AMD GPU detection — Linux (rocminfo) and Windows (hipinfo / WMI)."""
+
 from __future__ import annotations
 
 import os
@@ -57,6 +58,7 @@ def _run(cmd: list[str]) -> str | None:
 # Linux detection (rocminfo)
 # ---------------------------------------------------------------------------
 
+
 def _detect_amd_gpus_linux() -> list[GpuInfo]:
     output = _run(["rocminfo"])
     if output is None:
@@ -72,17 +74,20 @@ def _detect_amd_gpus_linux() -> list[GpuInfo]:
         if not gfx_match:
             continue
         vram_mb = int(vram_match.group(1)) // 1024 if vram_match else None
-        gpus.append(GpuInfo(
-            name=name_match.group(1).strip() if name_match else "Unknown AMD GPU",
-            gfx_version=gfx_match.group(1).strip(),
-            vram_mb=vram_mb,
-        ))
+        gpus.append(
+            GpuInfo(
+                name=name_match.group(1).strip() if name_match else "Unknown AMD GPU",
+                gfx_version=gfx_match.group(1).strip(),
+                vram_mb=vram_mb,
+            )
+        )
     return gpus
 
 
 # ---------------------------------------------------------------------------
 # Windows detection (hipinfo primary, wmic fallback)
 # ---------------------------------------------------------------------------
+
 
 def _parse_hipinfo(output: str) -> list[GpuInfo]:
     """Parse `hipinfo` stdout into GpuInfo objects."""
@@ -95,20 +100,28 @@ def _parse_hipinfo(output: str) -> list[GpuInfo]:
         name_match = re.search(r"^Name:\s*(.+)", block, re.MULTILINE)
         mem_match = re.search(r"totalGlobalMem:\s*([\d.]+)\s*GB", block)
         vram_mb = int(float(mem_match.group(1)) * 1024) if mem_match else None
-        gpus.append(GpuInfo(
-            name=name_match.group(1).strip() if name_match else "Unknown AMD GPU",
-            gfx_version=gfx_match.group(1).strip(),
-            vram_mb=vram_mb,
-        ))
+        gpus.append(
+            GpuInfo(
+                name=name_match.group(1).strip() if name_match else "Unknown AMD GPU",
+                gfx_version=gfx_match.group(1).strip(),
+                vram_mb=vram_mb,
+            )
+        )
     return gpus
 
 
 def _detect_via_wmi() -> list[GpuInfo]:
     """Detect AMD GPUs via wmic when hipinfo is unavailable."""
-    output = _run([
-        "wmic", "path", "Win32_VideoController",
-        "get", "Name,AdapterRAM", "/format:list",
-    ])
+    output = _run(
+        [
+            "wmic",
+            "path",
+            "Win32_VideoController",
+            "get",
+            "Name,AdapterRAM",
+            "/format:list",
+        ]
+    )
     if not output:
         return []
     gpus: list[GpuInfo] = []
@@ -138,6 +151,7 @@ def _detect_amd_gpus_windows() -> list[GpuInfo]:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def detect_amd_gpus() -> list[GpuInfo]:
     """Return all AMD GPUs detected. Empty list on failure."""

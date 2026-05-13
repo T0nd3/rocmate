@@ -1,4 +1,5 @@
 """Automated fix application for doctor check results."""
+
 from __future__ import annotations
 
 import os
@@ -73,7 +74,7 @@ def apply_fix(check: CheckResult) -> FixResult | None:
 
     if kind == FixKind.ENV_PROFILE:
         # Parse "export KEY=VALUE"
-        rest = check.fix[len("export "):].strip()
+        rest = check.fix[len("export ") :].strip()
         if "=" in rest:
             name, _, value = rest.partition("=")
             return fix_env_in_profile(name.strip(), value.strip())

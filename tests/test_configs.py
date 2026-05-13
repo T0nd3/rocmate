@@ -1,4 +1,5 @@
 """Tests for config loading, validation, and rendering."""
+
 from __future__ import annotations
 
 import io
@@ -10,10 +11,17 @@ from rocmate import configs
 
 # --- list_tools ---
 
+
 def test_list_tools_returns_all_tools():
     assert set(configs.list_tools()) == {
-        "ollama", "comfyui", "faster-whisper", "llama-cpp", "stable-diffusion-webui",
-        "vllm", "axolotl", "exllamav2",
+        "ollama",
+        "comfyui",
+        "faster-whisper",
+        "llama-cpp",
+        "stable-diffusion-webui",
+        "vllm",
+        "axolotl",
+        "exllamav2",
     }
 
 
@@ -23,6 +31,7 @@ def test_list_tools_is_sorted():
 
 
 # --- load_tool ---
+
 
 def test_all_yamls_load_without_error():
     for tool in configs.list_tools():
@@ -54,9 +63,9 @@ def test_tested_on_rocm_is_string_or_none():
     for tool in configs.list_tools():
         cfg = configs.load_tool(tool)
         for chip, support in cfg.chips.items():
-            assert support.tested_on_rocm is None or isinstance(
-                support.tested_on_rocm, str
-            ), f"{tool}/{chip}.tested_on_rocm must be str or None"
+            assert support.tested_on_rocm is None or isinstance(support.tested_on_rocm, str), (
+                f"{tool}/{chip}.tested_on_rocm must be str or None"
+            )
 
 
 def test_env_vars_are_string_dicts():
@@ -80,6 +89,7 @@ def test_install_hints_are_string_lists():
 
 
 # --- Specific config content ---
+
 
 def test_ollama_gfx1100_fully_populated():
     chip = configs.load_tool("ollama").chips["gfx1100"]
@@ -120,6 +130,7 @@ def test_faster_whisper_covers_gfx1101():
 
 # Windows install hints — at least one tool must have a Windows-specific hint
 # for each major chip family to fulfil v0.2 goals.
+
 
 def test_ollama_gfx1100_has_windows_install_hint():
     hints = configs.load_tool("ollama").chips["gfx1100"].install_hints
@@ -185,6 +196,7 @@ def test_exllamav2_gfx1100_has_cmake_hint():
 
 
 # --- render ---
+
 
 def _render_to_str(cfg: configs.ToolConfig) -> str:
     buf = io.StringIO()

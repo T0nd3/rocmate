@@ -1,4 +1,5 @@
 """rocmate command-line interface."""
+
 from __future__ import annotations
 
 import typer
@@ -31,9 +32,7 @@ def doctor(
     tool: str | None = typer.Option(
         None, "--tool", help="Also show compatibility for a specific tool."
     ),
-    fix: bool = typer.Option(
-        False, "--fix", help="Interactively apply fixes for detected issues."
-    ),
+    fix: bool = typer.Option(False, "--fix", help="Interactively apply fixes for detected issues."),
 ) -> None:
     """Check whether the system is ready for AI workloads on an AMD GPU."""
     result = doctor_module.run()

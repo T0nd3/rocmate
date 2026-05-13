@@ -1,4 +1,5 @@
 """Smoke tests for rocmate modules."""
+
 from __future__ import annotations
 
 from rocmate import configs

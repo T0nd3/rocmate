@@ -1,4 +1,5 @@
 """Tool installation planner and executor."""
+
 from __future__ import annotations
 
 import os
@@ -17,11 +18,13 @@ class InstallError(RuntimeError):
 
 # Hints that start with these words are executable shell commands.
 _EXECUTABLE_PREFIXES = (
-    "pip ", "pip3 ",
+    "pip ",
+    "pip3 ",
     "git ",
     "cmake ",
     "curl ",
-    "python ", "python3 ",
+    "python ",
+    "python3 ",
     "sudo ",
     "./",
     "docker ",
@@ -70,10 +73,12 @@ def build_plan(tool: str, chip: str) -> InstallPlan:
 
 def render_dry_run(plan: InstallPlan, console: Console) -> None:
     """Print what the install would do without executing anything."""
-    console.print(Panel(
-        f"[bold]{plan.tool_name}[/bold] on [bold]{plan.chip}[/bold]  [dim](dry-run)[/dim]",
-        expand=False,
-    ))
+    console.print(
+        Panel(
+            f"[bold]{plan.tool_name}[/bold] on [bold]{plan.chip}[/bold]  [dim](dry-run)[/dim]",
+            expand=False,
+        )
+    )
 
     if plan.env_vars:
         console.print("\n[bold]ENV vars:[/bold]")
@@ -95,9 +100,7 @@ def render_dry_run(plan: InstallPlan, console: Console) -> None:
 
 def render_docker_compose(plan: InstallPlan) -> str:
     """Return a Docker Compose YAML snippet for the given plan."""
-    env_lines = "\n".join(
-        f"      - {k}={v}" for k, v in plan.env_vars.items()
-    )
+    env_lines = "\n".join(f"      - {k}={v}" for k, v in plan.env_vars.items())
     env_section = f"\n    environment:\n{env_lines}" if env_lines else ""
 
     return (
@@ -121,9 +124,7 @@ def execute(plan: InstallPlan) -> None:
     Raises InstallError on non-zero exit.
     """
     # Snapshot current values for rollback
-    snapshot: dict[str, str | None] = {
-        k: os.environ.get(k) for k in plan.env_vars
-    }
+    snapshot: dict[str, str | None] = {k: os.environ.get(k) for k in plan.env_vars}
 
     # Apply ENV vars
     for k, v in plan.env_vars.items():
@@ -133,9 +134,7 @@ def execute(plan: InstallPlan) -> None:
         for cmd in plan.commands:
             result = subprocess.run(cmd, shell=True, check=False)
             if result.returncode != 0:
-                raise InstallError(
-                    f"Command failed (exit {result.returncode}): {cmd}"
-                )
+                raise InstallError(f"Command failed (exit {result.returncode}): {cmd}")
     except InstallError:
         # Restore ENV vars
         for k, original in snapshot.items():

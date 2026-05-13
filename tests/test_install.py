@@ -1,4 +1,5 @@
 """Tests for the install module."""
+
 from __future__ import annotations
 
 import io
@@ -13,6 +14,7 @@ from rocmate import install
 # ---------------------------------------------------------------------------
 # build_plan
 # ---------------------------------------------------------------------------
+
 
 def test_plan_tool_and_chip_set():
     plan = install.build_plan("ollama", "gfx1100")
@@ -73,6 +75,7 @@ def test_commands_do_not_contain_informational_lines():
 # render_dry_run
 # ---------------------------------------------------------------------------
 
+
 def _render_dry_run(plan: install.InstallPlan) -> str:
     buf = io.StringIO()
     console = Console(file=buf, highlight=False, no_color=True)
@@ -113,6 +116,7 @@ def test_dry_run_indicates_it_is_dry_run():
 # render_docker_compose
 # ---------------------------------------------------------------------------
 
+
 def test_docker_compose_has_services_key():
     plan = install.build_plan("comfyui", "gfx1100")
     snippet = install.render_docker_compose(plan)
@@ -140,6 +144,7 @@ def test_docker_compose_includes_tool_as_service_name():
 # ---------------------------------------------------------------------------
 # execute (--yes mode)
 # ---------------------------------------------------------------------------
+
 
 def test_execute_sets_env_vars():
     plan = install.build_plan("comfyui", "gfx1100")
@@ -171,8 +176,12 @@ def test_execute_restores_env_on_failure():
 def test_execute_no_commands_does_not_call_subprocess():
     plan = install.build_plan("ollama", "gfx1100")
     plan_no_cmds = install.InstallPlan(
-        tool=plan.tool, chip=plan.chip, tool_name=plan.tool_name,
-        env_vars={}, commands=[], hints=[],
+        tool=plan.tool,
+        chip=plan.chip,
+        tool_name=plan.tool_name,
+        env_vars={},
+        commands=[],
+        hints=[],
     )
     with patch("rocmate.install.subprocess.run") as mock_run:
         install.execute(plan_no_cmds)

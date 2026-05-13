@@ -1,4 +1,5 @@
 """Tests for the fixer module."""
+
 from __future__ import annotations
 
 import os
@@ -8,6 +9,7 @@ from rocmate import fixer
 from rocmate.doctor import CheckResult, Status
 
 # --- classify_fix ---
+
 
 def test_classify_export_returns_env_profile():
     assert fixer.classify_fix("export HSA_OVERRIDE_GFX_VERSION=10.3.0") == fixer.FixKind.ENV_PROFILE
@@ -33,23 +35,23 @@ def test_classify_instruction_returns_manual():
 
 # --- _detect_shell_profile ---
 
+
 def test_detect_shell_profile_returns_zshrc_for_zsh(tmp_path):
-    with patch.dict(os.environ, {"SHELL": "/bin/zsh"}), \
-         patch("rocmate.fixer.Path") as mock_path:
+    with patch.dict(os.environ, {"SHELL": "/bin/zsh"}), patch("rocmate.fixer.Path") as mock_path:
         mock_path.home.return_value = tmp_path
         result = fixer._detect_shell_profile()
     assert result == tmp_path / ".zshrc"
 
 
 def test_detect_shell_profile_returns_bashrc_as_default(tmp_path):
-    with patch.dict(os.environ, {"SHELL": "/bin/bash"}), \
-         patch("rocmate.fixer.Path") as mock_path:
+    with patch.dict(os.environ, {"SHELL": "/bin/bash"}), patch("rocmate.fixer.Path") as mock_path:
         mock_path.home.return_value = tmp_path
         result = fixer._detect_shell_profile()
     assert result == tmp_path / ".bashrc"
 
 
 # --- fix_env_in_profile ---
+
 
 def test_fix_env_writes_export_line(tmp_path):
     profile = tmp_path / ".bashrc"
@@ -86,6 +88,7 @@ def test_fix_env_preserves_existing_content(tmp_path):
 
 # --- fix_sudo_command ---
 
+
 def test_fix_sudo_command_success():
     with patch("rocmate.fixer.subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0)
@@ -111,6 +114,7 @@ def test_fix_sudo_command_strips_compound_at_double_ampersand():
 
 # --- apply_fix ---
 
+
 def test_apply_fix_returns_none_for_no_fix():
     check = CheckResult("gpu", Status.FAIL, "No GPU detected")
     assert fixer.apply_fix(check) is None
@@ -118,7 +122,8 @@ def test_apply_fix_returns_none_for_no_fix():
 
 def test_apply_fix_env_export_writes_profile(tmp_path):
     check = CheckResult(
-        "env:HSA_OVERRIDE_GFX_VERSION", Status.WARN,
+        "env:HSA_OVERRIDE_GFX_VERSION",
+        Status.WARN,
         "HSA_OVERRIDE_GFX_VERSION not set",
         fix="export HSA_OVERRIDE_GFX_VERSION=10.3.0",
     )
@@ -132,7 +137,9 @@ def test_apply_fix_env_export_writes_profile(tmp_path):
 
 def test_apply_fix_sudo_runs_command():
     check = CheckResult(
-        "group:render", Status.FAIL, "Not in render group",
+        "group:render",
+        Status.FAIL,
+        "Not in render group",
         fix="sudo usermod -aG render $USER && newgrp render",
     )
     with patch("rocmate.fixer.subprocess.run") as mock_run:
@@ -144,7 +151,9 @@ def test_apply_fix_sudo_runs_command():
 
 def test_apply_fix_manual_returns_not_applied():
     check = CheckResult(
-        "gpu", Status.FAIL, "No GPU",
+        "gpu",
+        Status.FAIL,
+        "No GPU",
         fix="Install ROCm: https://rocm.docs.amd.com",
     )
     result = fixer.apply_fix(check)

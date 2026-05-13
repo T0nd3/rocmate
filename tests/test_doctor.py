@@ -1,4 +1,5 @@
 """Tests for doctor diagnostics."""
+
 from __future__ import annotations
 
 import io
@@ -12,6 +13,7 @@ from rocmate.doctor import CheckResult, DiagnosticReport, Status
 from rocmate.gpu import GpuInfo
 
 # --- DiagnosticReport.has_blocking_issues ---
+
 
 def test_no_checks_not_blocking():
     assert not DiagnosticReport().has_blocking_issues()
@@ -33,14 +35,17 @@ def test_fail_is_blocking():
 
 
 def test_mixed_fail_and_ok_is_blocking():
-    report = DiagnosticReport(checks=[
-        CheckResult("gpu", Status.OK, "found"),
-        CheckResult("rocm", Status.FAIL, "missing"),
-    ])
+    report = DiagnosticReport(
+        checks=[
+            CheckResult("gpu", Status.OK, "found"),
+            CheckResult("rocm", Status.FAIL, "missing"),
+        ]
+    )
     assert report.has_blocking_issues()
 
 
 # --- _check_env_vars ---
+
 
 def test_no_warning_for_mainstream_chip():
     gpus = [GpuInfo("RX 7900 XTX", "gfx1100", 24576)]
@@ -74,13 +79,11 @@ def test_empty_gpu_list_returns_empty():
 
 # --- _check_groups ---
 
+
 def _make_mock_grp(groups: dict[str, list[str]]) -> MagicMock:
     """Build a mock grp module with the given {group_name: [members]} mapping."""
     mock_grp = MagicMock()
-    mock_entries = [
-        MagicMock(gr_name=name, gr_mem=members)
-        for name, members in groups.items()
-    ]
+    mock_entries = [MagicMock(gr_name=name, gr_mem=members) for name, members in groups.items()]
     mock_grp.getgrall.return_value = mock_entries
     return mock_grp
 
@@ -92,8 +95,7 @@ def test_check_groups_skipped_on_non_linux():
 
 def test_check_groups_ok_when_in_both():
     mock_grp = _make_mock_grp({"render": ["testuser"], "video": ["testuser"]})
-    with patch("rocmate.doctor._HAS_GRP", True), \
-         patch("rocmate.doctor.grp", mock_grp, create=True):
+    with patch("rocmate.doctor._HAS_GRP", True), patch("rocmate.doctor.grp", mock_grp, create=True):
         results = doctor._check_groups("testuser")
     assert len(results) == 2
     assert all(r.status == Status.OK for r in results)
@@ -101,8 +103,7 @@ def test_check_groups_ok_when_in_both():
 
 def test_check_groups_fail_when_missing_render():
     mock_grp = _make_mock_grp({"render": [], "video": ["testuser"]})
-    with patch("rocmate.doctor._HAS_GRP", True), \
-         patch("rocmate.doctor.grp", mock_grp, create=True):
+    with patch("rocmate.doctor._HAS_GRP", True), patch("rocmate.doctor.grp", mock_grp, create=True):
         results = doctor._check_groups("testuser")
     by_name = {r.name: r for r in results}
     assert by_name["group:render"].status == Status.FAIL
@@ -111,8 +112,7 @@ def test_check_groups_fail_when_missing_render():
 
 def test_check_groups_fail_fix_contains_usermod():
     mock_grp = _make_mock_grp({"render": [], "video": []})
-    with patch("rocmate.doctor._HAS_GRP", True), \
-         patch("rocmate.doctor.grp", mock_grp, create=True):
+    with patch("rocmate.doctor._HAS_GRP", True), patch("rocmate.doctor.grp", mock_grp, create=True):
         results = doctor._check_groups("testuser")
     for r in results:
         if r.status == Status.FAIL:
@@ -121,17 +121,19 @@ def test_check_groups_fail_fix_contains_usermod():
 
 
 def test_check_groups_returns_empty_without_username():
-    with patch("rocmate.doctor._HAS_GRP", True), \
-         patch.dict(os.environ, {}, clear=True):
+    with patch("rocmate.doctor._HAS_GRP", True), patch.dict(os.environ, {}, clear=True):
         results = doctor._check_groups(username=None)
     assert results == []
 
 
 # --- run ---
 
+
 def test_run_fail_when_no_gpu():
-    with patch("rocmate.gpu.detect_amd_gpus", return_value=[]), \
-         patch("rocmate.gpu.get_rocm_version", return_value=None):
+    with (
+        patch("rocmate.gpu.detect_amd_gpus", return_value=[]),
+        patch("rocmate.gpu.get_rocm_version", return_value=None),
+    ):
         report = doctor.run()
     gpu_check = next(c for c in report.checks if c.name == "gpu")
     assert gpu_check.status == Status.FAIL
@@ -139,8 +141,10 @@ def test_run_fail_when_no_gpu():
 
 def test_run_fail_when_no_rocm():
     gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
-    with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]), \
-         patch("rocmate.gpu.get_rocm_version", return_value=None):
+    with (
+        patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]),
+        patch("rocmate.gpu.get_rocm_version", return_value=None),
+    ):
         report = doctor.run()
     rocm_check = next(c for c in report.checks if c.name == "rocm")
     assert rocm_check.status == Status.FAIL
@@ -148,8 +152,10 @@ def test_run_fail_when_no_rocm():
 
 def test_run_ok_when_gpu_and_rocm_present():
     gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
-    with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]), \
-         patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"):
+    with (
+        patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]),
+        patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"),
+    ):
         report = doctor.run()
     gpu_check = next(c for c in report.checks if c.name == "gpu")
     rocm_check = next(c for c in report.checks if c.name == "rocm")
@@ -159,8 +165,10 @@ def test_run_ok_when_gpu_and_rocm_present():
 
 def test_run_gpu_check_contains_gfx_version():
     gpu = GpuInfo("RX 7900 XTX", "gfx1100", 24576)
-    with patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]), \
-         patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"):
+    with (
+        patch("rocmate.gpu.detect_amd_gpus", return_value=[gpu]),
+        patch("rocmate.gpu.get_rocm_version", return_value="6.3.1"),
+    ):
         report = doctor.run()
     gpu_check = next(c for c in report.checks if c.name == "gpu")
     assert "gfx1100" in gpu_check.message
@@ -168,9 +176,12 @@ def test_run_gpu_check_contains_gfx_version():
 
 # --- _check_docker ---
 
+
 def test_docker_ok_when_available():
-    with patch("rocmate.doctor.shutil.which", return_value="/usr/bin/docker"), \
-         patch("rocmate.doctor._run_check", return_value="amdgpu"):
+    with (
+        patch("rocmate.doctor.shutil.which", return_value="/usr/bin/docker"),
+        patch("rocmate.doctor._run_check", return_value="amdgpu"),
+    ):
         results = doctor._check_docker()
     assert any(r.status == Status.OK for r in results)
 
@@ -183,17 +194,22 @@ def test_docker_warn_when_not_installed():
 
 
 def test_docker_warn_when_gpu_not_accessible():
-    with patch("rocmate.doctor.shutil.which", return_value="/usr/bin/docker"), \
-         patch("rocmate.doctor._run_check", return_value=None):
+    with (
+        patch("rocmate.doctor.shutil.which", return_value="/usr/bin/docker"),
+        patch("rocmate.doctor._run_check", return_value=None),
+    ):
         results = doctor._check_docker()
     assert any(r.status == Status.WARN for r in results)
 
 
 # --- _check_vulkan ---
 
+
 def test_vulkan_ok_when_amd_device_found():
-    with patch("rocmate.doctor.shutil.which", return_value="/usr/bin/vulkaninfo"), \
-         patch("rocmate.doctor._run_check", return_value="deviceName = AMD Radeon RX 7900 XTX"):
+    with (
+        patch("rocmate.doctor.shutil.which", return_value="/usr/bin/vulkaninfo"),
+        patch("rocmate.doctor._run_check", return_value="deviceName = AMD Radeon RX 7900 XTX"),
+    ):
         results = doctor._check_vulkan()
     assert any(r.status == Status.OK for r in results)
 
@@ -206,13 +222,16 @@ def test_vulkan_warn_when_vulkaninfo_missing():
 
 
 def test_vulkan_warn_when_no_amd_in_output():
-    with patch("rocmate.doctor.shutil.which", return_value="/usr/bin/vulkaninfo"), \
-         patch("rocmate.doctor._run_check", return_value="deviceName = llvmpipe"):
+    with (
+        patch("rocmate.doctor.shutil.which", return_value="/usr/bin/vulkaninfo"),
+        patch("rocmate.doctor._run_check", return_value="deviceName = llvmpipe"),
+    ):
         results = doctor._check_vulkan()
     assert any(r.status == Status.WARN for r in results)
 
 
 # --- render ---
+
 
 def _render_report(report: DiagnosticReport) -> str:
     buf = io.StringIO()
@@ -222,19 +241,23 @@ def _render_report(report: DiagnosticReport) -> str:
 
 
 def test_render_shows_check_messages():
-    report = DiagnosticReport(checks=[
-        CheckResult("gpu", Status.OK, "GPU found"),
-        CheckResult("rocm", Status.FAIL, "ROCm missing", fix="install rocm"),
-    ])
+    report = DiagnosticReport(
+        checks=[
+            CheckResult("gpu", Status.OK, "GPU found"),
+            CheckResult("rocm", Status.FAIL, "ROCm missing", fix="install rocm"),
+        ]
+    )
     output = _render_report(report)
     assert "GPU found" in output
     assert "ROCm missing" in output
 
 
 def test_render_shows_fix_hint():
-    report = DiagnosticReport(checks=[
-        CheckResult("rocm", Status.FAIL, "ROCm missing", fix="install rocm"),
-    ])
+    report = DiagnosticReport(
+        checks=[
+            CheckResult("rocm", Status.FAIL, "ROCm missing", fix="install rocm"),
+        ]
+    )
     assert "install rocm" in _render_report(report)
 
 

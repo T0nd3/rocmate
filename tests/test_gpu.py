@@ -1,4 +1,5 @@
 """Tests for AMD GPU detection."""
+
 from __future__ import annotations
 
 import os
@@ -56,6 +57,7 @@ _ROCMINFO_MISSING_MARKETING_NAME = """\
 # --- _detect_amd_gpus_linux (rocminfo parser) ---
 # Call the private function directly — these tests verify the parser, not routing.
 
+
 def test_detects_single_gpu():
     with patch("rocmate.gpu._run", return_value=_ROCMINFO_ONE_GPU):
         gpus = gpu._detect_amd_gpus_linux()
@@ -108,45 +110,57 @@ def test_missing_marketing_name_falls_back_to_unknown():
 # --- get_rocm_version ---
 # Platform is patched explicitly so tests are deterministic on any OS.
 
+
 def test_reads_version_file():
-    with patch("builtins.open", mock_open(read_data="6.3.1\n")), \
-         patch("rocmate.gpu.sys.platform", "linux"):
+    with (
+        patch("builtins.open", mock_open(read_data="6.3.1\n")),
+        patch("rocmate.gpu.sys.platform", "linux"),
+    ):
         version = gpu.get_rocm_version()
     assert version == "6.3.1"
 
 
 def test_strips_whitespace_from_version_file():
-    with patch("builtins.open", mock_open(read_data="  6.2.0  \n")), \
-         patch("rocmate.gpu.sys.platform", "linux"):
+    with (
+        patch("builtins.open", mock_open(read_data="  6.2.0  \n")),
+        patch("rocmate.gpu.sys.platform", "linux"),
+    ):
         version = gpu.get_rocm_version()
     assert version == "6.2.0"
 
 
 def test_falls_back_to_hipcc_when_file_missing():
-    with patch("builtins.open", side_effect=OSError), \
-         patch("rocmate.gpu.sys.platform", "linux"), \
-         patch("rocmate.gpu._run", return_value="HIP version: 6.2.0\n"):
+    with (
+        patch("builtins.open", side_effect=OSError),
+        patch("rocmate.gpu.sys.platform", "linux"),
+        patch("rocmate.gpu._run", return_value="HIP version: 6.2.0\n"),
+    ):
         version = gpu.get_rocm_version()
     assert version == "6.2.0"
 
 
 def test_returns_none_when_nothing_available():
-    with patch("builtins.open", side_effect=OSError), \
-         patch("rocmate.gpu.sys.platform", "linux"), \
-         patch("rocmate.gpu._run", return_value=None):
+    with (
+        patch("builtins.open", side_effect=OSError),
+        patch("rocmate.gpu.sys.platform", "linux"),
+        patch("rocmate.gpu._run", return_value=None),
+    ):
         version = gpu.get_rocm_version()
     assert version is None
 
 
 def test_returns_none_when_hipcc_output_unparseable():
-    with patch("builtins.open", side_effect=OSError), \
-         patch("rocmate.gpu.sys.platform", "linux"), \
-         patch("rocmate.gpu._run", return_value="some unexpected output\n"):
+    with (
+        patch("builtins.open", side_effect=OSError),
+        patch("rocmate.gpu.sys.platform", "linux"),
+        patch("rocmate.gpu._run", return_value="some unexpected output\n"),
+    ):
         version = gpu.get_rocm_version()
     assert version is None
 
 
 # --- _run helper ---
+
 
 def test_run_returns_none_when_command_not_found():
     with patch("rocmate.gpu.shutil.which", return_value=None):
@@ -192,6 +206,7 @@ _WMIC_TWO_CARDS = (
 
 # --- _parse_hipinfo ---
 
+
 class TestParseHipinfo:
     def test_single_gpu_count(self):
         assert len(gpu._parse_hipinfo(_HIPINFO_ONE_GPU)) == 1
@@ -219,6 +234,7 @@ class TestParseHipinfo:
 
 
 # --- _detect_via_wmi ---
+
 
 class TestDetectViaWmi:
     def test_known_amd_gpu_returned(self):
@@ -249,6 +265,7 @@ class TestDetectViaWmi:
 
 # --- _detect_amd_gpus_windows ---
 
+
 class TestDetectAmdGpusWindows:
     def test_uses_hipinfo_when_available(self):
         with patch("rocmate.gpu._run", return_value=_HIPINFO_ONE_GPU):
@@ -272,27 +289,35 @@ class TestDetectAmdGpusWindows:
 
 # --- detect_amd_gpus platform routing ---
 
+
 class TestDetectAmdGpusPlatformRouting:
     def test_routes_to_windows_on_win32(self):
-        with patch("rocmate.gpu.sys.platform", "win32"), \
-             patch("rocmate.gpu._detect_amd_gpus_windows", return_value=[]) as mock_win:
+        with (
+            patch("rocmate.gpu.sys.platform", "win32"),
+            patch("rocmate.gpu._detect_amd_gpus_windows", return_value=[]) as mock_win,
+        ):
             gpu.detect_amd_gpus()
         mock_win.assert_called_once()
 
     def test_routes_to_linux_on_linux(self):
-        with patch("rocmate.gpu.sys.platform", "linux"), \
-             patch("rocmate.gpu._run", return_value=None) as mock_run:
+        with (
+            patch("rocmate.gpu.sys.platform", "linux"),
+            patch("rocmate.gpu._run", return_value=None) as mock_run,
+        ):
             gpu.detect_amd_gpus()
         mock_run.assert_called_once_with(["rocminfo"])
 
 
 # --- get_rocm_version Windows path ---
 
+
 class TestGetRocmVersionWindows:
     def test_reads_hip_path_version_file(self):
-        with patch("builtins.open", mock_open(read_data="6.2.0\n")), \
-             patch("rocmate.gpu.sys.platform", "win32"), \
-             patch.dict(os.environ, {"HIP_PATH": r"C:\Program Files\AMD\ROCm\6.2"}):
+        with (
+            patch("builtins.open", mock_open(read_data="6.2.0\n")),
+            patch("rocmate.gpu.sys.platform", "win32"),
+            patch.dict(os.environ, {"HIP_PATH": r"C:\Program Files\AMD\ROCm\6.2"}),
+        ):
             version = gpu.get_rocm_version()
         assert version == "6.2.0"
 
@@ -300,9 +325,11 @@ class TestGetRocmVersionWindows:
         def _open_side_effect(*_a, **_kw):
             raise OSError
 
-        with patch("builtins.open", side_effect=_open_side_effect), \
-             patch("rocmate.gpu.sys.platform", "win32"), \
-             patch.dict(os.environ, {"HIP_PATH": r"C:\Program Files\AMD\ROCm\6.2"}), \
-             patch("rocmate.gpu._run", return_value="HIP version: 6.2.60559-2985b26\n"):
+        with (
+            patch("builtins.open", side_effect=_open_side_effect),
+            patch("rocmate.gpu.sys.platform", "win32"),
+            patch.dict(os.environ, {"HIP_PATH": r"C:\Program Files\AMD\ROCm\6.2"}),
+            patch("rocmate.gpu._run", return_value="HIP version: 6.2.60559-2985b26\n"),
+        ):
             version = gpu.get_rocm_version()
         assert version == "6.2.60559-2985b26"
