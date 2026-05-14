@@ -15,6 +15,8 @@ chips:
       Set HIP_VISIBLE_DEVICES=0 if you have an iGPU to prevent ROCm picking it up as a second device.
       Add -ngl 99 when running — without it layers run on CPU regardless of build flags.
       Vulkan build also works if you prefer to avoid ROCm.
+      EXPERIMENTAL: TBQ4 KV cache + MTP on a community fork enables 64k context in ~20 GB VRAM
+      (38-54 tok/s on Qwen3-27B Q4_K_M). See github.com/DrBearJew/llama.cpp tree tbq4-rdna3-experiment.
     env_vars: {}
     install_hints:
       - "Linux: git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp"
