@@ -17,12 +17,21 @@ chips:
       Vulkan build also works if you prefer to avoid ROCm.
       EXPERIMENTAL: TBQ4 KV cache + MTP on a community fork enables 64k context in ~20 GB VRAM
       (38-54 tok/s on Qwen3-27B Q4_K_M). See github.com/DrBearJew/llama.cpp tree tbq4-rdna3-experiment.
+      DUAL GPU: Tensor parallelism requires ROCm — Vulkan TP is a WIP and only works for very small
+      contexts. Set HIP_VISIBLE_DEVICES=0,1 and ROCBLAS_USE_HIPBLASLT=1. Use --split-mode tensor
+      --tensor-split 1,1 --flash-attn on. Q8_0 fits in 48 GB (2x24 GB) and gives best accuracy.
+      MTP (--spec-type draft-mtp --spec-draft-n-max 3) works on dual GPU but limits --parallel to 1
+      and disables mmproj. Use --no-mmap if system RAM < total VRAM; --ctx-checkpoints 16 manages
+      RAM overhead at 131072 context. See github.com/ggml-org/llama.cpp/pull/22673 for MTP status.
     env_vars: {}
     install_hints:
       - "Linux: git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp"
       - "HIP (ROCm) — full flags: cmake -B build -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx1100 -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/opt/rocm/bin/hipcc -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hipcc && cmake --build build -j$(nproc)"
       - "Vulkan (no ROCm needed): cmake -B build -DGGML_VULKAN=ON && cmake --build build --config Release -j$(nproc)"
-      - "Run: HIP_VISIBLE_DEVICES=0 ./build/bin/llama-server -m model.gguf -ngl 99 --host 0.0.0.0 --port 8000"
+      - "Single GPU run: HIP_VISIBLE_DEVICES=0 ./build/bin/llama-server -m model.gguf -ngl 99 --host 0.0.0.0 --port 8000"
+      - "Dual GPU env: export HIP_VISIBLE_DEVICES=0,1 ROCBLAS_USE_HIPBLASLT=1"
+      - "Dual GPU run: ./build/bin/llama-server -m model.gguf -ngl 99 --split-mode tensor --tensor-split 1,1 --flash-attn on --ctx-size 131072 --no-mmap --host 0.0.0.0 --port 8000"
+      - "Dual GPU + MTP: add --spec-type draft-mtp --spec-draft-n-max 3 --spec-draft-ngl 99 --parallel 1 (MTP: no mmproj, parallel locked to 1)"
       - "Windows: download pre-built HIP binary from GitHub Releases (look for 'hip' in filename)"
 
   gfx1101:
