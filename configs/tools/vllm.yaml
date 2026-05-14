@@ -50,24 +50,27 @@ chips:
       - "python -m vllm.entrypoints.openai.api_server --model <model> --gpu-memory-utilization 0.80"
 
   gfx1151:
-    status: partial
-    tested_on_rocm: "7.12"
+    status: tested
+    tested_on_rocm: "7.13 nightly (TheRock)"
     notes: >
-      Strix Halo (gfx1151) — prefer Lemonade SDK's vllm-rocm portable build via
-      Lemonade's vllm:rocm backend. It ships a gfx1151-targeted vLLM, PyTorch,
-      and ROCm 7.12 user-space bundle, so no source build or HSA override is
-      required. Lemonade documents gfx1151 as validated end-to-end, but ROCm
-      vLLM remains experimental; verify with a small model on your kernel/runtime.
-      A Linux kernel with the gfx1151 CWSR fix is required (6.18.4+ or a distro
-      backport). APU unified memory means --gpu-memory-utilization should leave
-      room for the system.
+      Strix Halo (gfx1151) — use Kyuz0's Strix Halo vLLM toolbox/container.
+      The stable image builds vLLM and PyTorch against TheRock ROCm gfx1151
+      nightlies and includes Strix-specific patches for amdsmi, AITER/FlashAttention,
+      Triton, and APU unified-memory accounting. Smoke-tested locally on Radeon
+      8060S with docker.io/kyuz0/vllm-therock-gfx1151:stable: PyTorch ROCm matmul
+      worked, vLLM 0.19.2rc1.dev113+g6aa057c9d served facebook/opt-125m through
+      the OpenAI API, and completions returned successfully. If startup reports
+      free unified memory below the requested allocation, lower
+      --gpu-memory-utilization. A Linux kernel with the gfx1151 CWSR fix and sane
+      GTT/TTM limits is still recommended.
     env_vars: {}
     install_hints:
-      - "Lemonade-managed: lemonade backends install vllm:rocm"
-      - "Smoke test: lemonade load Qwen3.5-0.8B-vLLM --vllm rocm --ctx-size 512 --vllm-args '--gpu-memory-utilization 0.5'"
-      - "Direct bundle/debug: use Lemonade's pinned gfx1151 release (for Lemonade 10.4, vllm0.20.1-rocm7.12.0-gfx1151) rather than a generic upstream source build."
-      - "If launching the bundle directly, clear host ROCm/Python overrides such as LD_LIBRARY_PATH, PYTHONPATH, HIP_VISIBLE_DEVICES, and HSA_OVERRIDE_GFX_VERSION."
-      - "Verify kernel fix: grep -E 'cwsr_size|ctl_stack_size' /sys/class/kfd/kfd/topology/nodes/*/properties"
+      - "git clone https://github.com/kyuz0/amd-strix-halo-vllm-toolboxes && cd amd-strix-halo-vllm-toolboxes"
+      - "Recommended: ./refresh_toolbox.sh stable"
+      - "Manual toolbox: toolbox create vllm --image docker.io/kyuz0/vllm-therock-gfx1151:stable -- --device /dev/dri --device /dev/kfd --group-add video --group-add render --security-opt seccomp=unconfined"
+      - "Enter and launch: toolbox enter vllm && start-vllm"
+      - "Direct serve example: vllm serve <model> --gpu-memory-utilization 0.5 --attention-backend TRITON_ATTN --mm-encoder-attn-backend TRITON_ATTN"
+      - "If vLLM refuses to start with a free-memory error, reduce --gpu-memory-utilization (for example 0.35 on busy 128 GB systems)."
 
   gfx1201:
     status: partial

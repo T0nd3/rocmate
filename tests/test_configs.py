@@ -244,13 +244,13 @@ def test_llama_cpp_gfx1151_is_tested():
     assert chip.status == "tested"
 
 
-def test_vllm_gfx1151_uses_lemonade_portable_build():
+def test_vllm_gfx1151_uses_kyuz0_toolbox():
     chip = configs.load_tool("vllm").chips["gfx1151"]
-    assert chip.status == "partial"
+    assert chip.status == "tested"
     assert chip.env_vars == {}
     hints = " ".join(chip.install_hints)
-    assert "vllm:rocm" in hints
-    assert "vllm0.20.1-rocm7.12.0-gfx1151" in hints
+    assert "kyuz0/amd-strix-halo-vllm-toolboxes" in hints
+    assert "docker.io/kyuz0/vllm-therock-gfx1151:stable" in hints
 
 
 def test_comfyui_gfx1151_has_pytorch_env():

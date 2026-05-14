@@ -55,7 +55,7 @@ rocmate doctor --fix
 | faster-whisper | — | ✅ | 🟡 | — | — | — |
 | llama.cpp | ✅ | ✅ | ✅ | ✅ | ✅ | 🟡 |
 | Stable Diffusion WebUI | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
-| vLLM | 🟡 | ✅ | ✅ | 🟡 | 🟡 | 🟡 |
+| vLLM | ✅ | ✅ | ✅ | 🟡 | 🟡 | 🟡 |
 | Axolotl | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
 | ExLlamaV2 | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
 
