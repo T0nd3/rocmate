@@ -3,6 +3,8 @@ name: Deploy Pages
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: "0 6 * * *"   # daily at 06:00 UTC — refresh community benchmarks
   workflow_dispatch:
 
 permissions:
@@ -24,6 +26,11 @@ jobs:
           python-version: "3.11"
       - name: Install deps
         run: pip install pyyaml
+      - name: Fetch community benchmarks
+        env:
+          MATE_BENCH_CF_TOKEN: ${{ secrets.MATE_BENCH_CF_TOKEN }}
+        run: python scripts/fetch_community_benchmarks.py
+        continue-on-error: true
       - name: Build site
         run: python scripts/build_matrix.py
       - uses: actions/upload-pages-artifact@v3
