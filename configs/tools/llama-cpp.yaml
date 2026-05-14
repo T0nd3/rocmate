@@ -1,5 +1,7 @@
 name: llama.cpp
-description: Efficient LLM inference in C++ with HIP backend for AMD GPUs.
+description: >
+  Efficient LLM inference in C++ with HIP (ROCm) or Vulkan backend for AMD GPUs.
+  Vulkan works on any RDNA card and is a good alternative where ROCm support is limited.
 homepage: https://github.com/ggerganov/llama.cpp
 
 chips:
@@ -9,42 +11,58 @@ chips:
     notes: >
       Compile with GGML_HIP=ON. Runs well on RX 7900 XTX; Q4_K_M models up to 70B fit in 24 GB.
       Pre-built HIP binaries available in GitHub releases.
+      Vulkan build also works if you prefer to avoid ROCm: cmake -B build -DGGML_VULKAN=ON.
     env_vars: {}
     install_hints:
       - "Linux: git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp"
-      - "cmake -B build -DGGML_HIP=ON && cmake --build build --config Release -j$(nproc)"
+      - "HIP (ROCm): cmake -B build -DGGML_HIP=ON && cmake --build build --config Release -j$(nproc)"
+      - "Vulkan (no ROCm needed): cmake -B build -DGGML_VULKAN=ON && cmake --build build --config Release -j$(nproc)"
       - "Windows: download pre-built HIP binary from GitHub Releases (look for 'hip' in filename)"
       - "Verify GPU is used: ./build/bin/llama-cli -m model.gguf -p 'hello' --n-gpu-layers 99"
 
   gfx1101:
     status: tested
     tested_on_rocm: "6.2"
-    notes: RX 7800 XT / RX 7700 XT — same build as gfx1100. 16 GB VRAM; Q4_K_M models up to 32B.
+    notes: >
+      RX 7800 XT / RX 7700 XT — same HIP build as gfx1100. 16 GB VRAM; Q4_K_M models up to 32B.
+      Vulkan build is an alternative if ROCm gives trouble.
     env_vars: {}
     install_hints:
-      - "Same build as gfx1100."
+      - "Same HIP build as gfx1100."
+      - "Vulkan alternative: cmake -B build -DGGML_VULKAN=ON && cmake --build build --config Release -j$(nproc)"
 
   gfx1102:
     status: tested
     tested_on_rocm: "6.2"
-    notes: RX 7600 — 8 GB VRAM; Q4_K_M models up to 8B. Offload remaining layers to CPU with --n-gpu-layers.
+    notes: >
+      RX 7600 — 8 GB VRAM; Q4_K_M models up to 8B. Offload remaining layers to CPU with --n-gpu-layers.
+      Vulkan build is an alternative if ROCm gives trouble.
     env_vars: {}
     install_hints:
-      - "Same build as gfx1100."
+      - "Same HIP build as gfx1100."
       - "Use --n-gpu-layers 30 to partially offload larger models."
+      - "Vulkan alternative: cmake -B build -DGGML_VULKAN=ON && cmake --build build --config Release -j$(nproc)"
 
   gfx1030:
     status: tested
     tested_on_rocm: "6.2"
-    notes: RX 6800/6900 — works out of the box with HIP build. Performance slightly below gfx1100.
+    notes: >
+      RX 6800/6900 — works out of the box with HIP build. Performance slightly below gfx1100.
+      Vulkan build is an alternative if ROCm gives trouble.
     env_vars: {}
     install_hints:
-      - "Same build as gfx1100."
+      - "Same HIP build as gfx1100."
+      - "Vulkan alternative: cmake -B build -DGGML_VULKAN=ON && cmake --build build --config Release -j$(nproc)"
 
   gfx1201:
     status: partial
     tested_on_rocm: "7.x"
-    notes: RX 9070 — requires ROCm 7.x. HIP build may need HSA_OVERRIDE for gfx120x target.
+    notes: >
+      RX 9070 — ROCm 7.x required for HIP build, not yet widely available.
+      Vulkan build is the recommended path until ROCm 7.x is stable:
+      cmake -B build -DGGML_VULKAN=ON works on RDNA4 without ROCm.
     env_vars: {}
     install_hints:
-      - "Build with ROCm 7.x; report results to the rocmate project."
+      - "Vulkan (recommended): cmake -B build -DGGML_VULKAN=ON && cmake --build build --config Release -j$(nproc)"
+      - "HIP: requires ROCm 7.x; may need HSA_OVERRIDE_GFX_VERSION for gfx120x target."
+      - "Report your results to the rocmate project!"
