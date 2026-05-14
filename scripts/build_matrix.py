@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import html as html_mod
+import json
 from datetime import date
 from pathlib import Path
 
@@ -132,6 +133,15 @@ def load_configs() -> list[dict]:
     return configs
 
 
+def load_community_benchmarks() -> dict:
+    path = ROOT / "data" / "community_benchmarks.json"
+    if not path.exists():
+        return {}
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+    return data.get("benchmarks", {})
+
+
 # ---------------------------------------------------------------------------
 # Matrix page (index.html)
 # ---------------------------------------------------------------------------
@@ -254,7 +264,7 @@ def build_matrix_html(configs: list[dict], today: str) -> str:
 # Per-chip page (gfx1100/index.html)
 # ---------------------------------------------------------------------------
 
-def _tool_card(cfg: dict, chip_data: dict) -> str:
+def _tool_card(cfg: dict, chip_data: dict, bench_data: dict | None = None) -> str:
     name = html_mod.escape(cfg.get("name", cfg["_slug"]))
     homepage = html_mod.escape(cfg.get("homepage", ""))
     status = chip_data.get("status", "")
@@ -293,6 +303,20 @@ def _tool_card(cfg: dict, chip_data: dict) -> str:
         items = "".join(f'<li>{html_mod.escape(h)}</li>' for h in hints)
         hints_html = f'<div class="section"><h4>Install hints</h4><ul class="hints-list">{items}</ul></div>'
 
+    bench_html = ""
+    if bench_data and bench_data.get("best_tps") is not None:
+        best  = bench_data["best_tps"]
+        count = bench_data.get("submission_count", 0)
+        noun  = "submission" if count == 1 else "submissions"
+        bench_html = (
+            f'<div class="section"><h4>Community benchmarks</h4>'
+            f'<p class="bench-line">'
+            f'Best: <strong>{best:.1f} t/s</strong>'
+            f'&nbsp;&middot;&nbsp;{count} {noun} via '
+            f'<a href="https://github.com/T0nd3/mate-bench" target="_blank" rel="noopener">mate-bench</a>'
+            f'</p></div>'
+        )
+
     return f"""<div class="card">
       <div class="card-header">
         <span class="tool-title">{name_html}</span>
@@ -302,10 +326,11 @@ def _tool_card(cfg: dict, chip_data: dict) -> str:
       {notes_html}
       {env_html}
       {hints_html}
+      {bench_html}
     </div>"""
 
 
-def build_chip_html(chip_id: str, gpu_name: str, configs: list[dict], today: str) -> str:
+def build_chip_html(chip_id: str, gpu_name: str, configs: list[dict], today: str, benchmarks: dict | None = None) -> str:
     css_extra = """
     .back::before { content: "← "; }
     .card {
@@ -338,14 +363,19 @@ def build_chip_html(chip_id: str, gpu_name: str, configs: list[dict], today: str
     .chip-meta { font-size: 0.88rem; color: #64748b; margin-bottom: 1.5rem; }
     .chip-meta code { font-family: monospace; background: #f1f5f9;
       padding: 0.1rem 0.4rem; border-radius: 4px; }
+    .bench-line { font-size: 0.88rem; color: #374151; }
+    .bench-line strong { color: #15803d; }
+    .bench-line a { color: #64748b; }
 """
 
     supported = [
         cfg for cfg in configs if chip_id in (cfg.get("chips") or {})
     ]
 
+    chip_benchmarks = (benchmarks or {}).get(chip_id, {})
     cards = "\n    ".join(
-        _tool_card(cfg, cfg["chips"][chip_id]) for cfg in supported
+        _tool_card(cfg, cfg["chips"][chip_id], chip_benchmarks.get(cfg["_slug"]))
+        for cfg in supported
     )
 
     no_data = [cfg for cfg in configs if chip_id not in (cfg.get("chips") or {})]
@@ -381,8 +411,9 @@ def build_chip_html(chip_id: str, gpu_name: str, configs: list[dict], today: str
 
 def main() -> None:
     OUT_DIR.mkdir(exist_ok=True)
-    configs = load_configs()
-    today = date.today().isoformat()
+    configs    = load_configs()
+    benchmarks = load_community_benchmarks()
+    today      = date.today().isoformat()
 
     # Matrix
     matrix = build_matrix_html(configs, today)
@@ -393,7 +424,7 @@ def main() -> None:
     for chip_id, gpu_name in CHIPS:
         chip_dir = OUT_DIR / chip_id
         chip_dir.mkdir(exist_ok=True)
-        page = build_chip_html(chip_id, gpu_name, configs, today)
+        page = build_chip_html(chip_id, gpu_name, configs, today, benchmarks)
         (chip_dir / "index.html").write_text(page, encoding="utf-8")
         n = sum(1 for cfg in configs if chip_id in (cfg.get("chips") or {}))
         print(f"  {chip_id}/index.html ({n} tools)")
