@@ -14,6 +14,7 @@ CONFIG_DIR = ROOT / "configs" / "tools"
 OUT_DIR = ROOT / "site"
 
 CHIPS: list[tuple[str, str]] = [
+    ("gfx1151", "Radeon 8060S / 8050S (Strix Halo)"),
     ("gfx1100", "RX 7900 XT/XTX"),
     ("gfx1101", "RX 7800/7700 XT"),
     ("gfx1102", "RX 7600"),

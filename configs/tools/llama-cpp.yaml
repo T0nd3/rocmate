@@ -41,6 +41,20 @@ chips:
     install_hints:
       - "Same build as gfx1100."
 
+  gfx1151:
+    status: tested
+    tested_on_rocm: "7.x"
+    notes: >
+      Strix Halo — compile with GGML_HIP=ON under ROCm 7.x. Also works via Vulkan
+      backend as a fallback (GGML_VULKAN=ON). rocWMMA tuning may improve perf.
+      APU unified memory; monitor total system RAM usage, not just VRAM.
+    env_vars: {}
+    install_hints:
+      - "git clone https://github.com/ggerganov/llama.cpp && cd llama.cpp"
+      - "cmake -B build -DGGML_HIP=ON && cmake --build build --config Release -j$(nproc)"
+      - "Vulkan fallback: cmake -B build -DGGML_VULKAN=ON"
+      - "Verify GPU: ./build/bin/llama-cli -m model.gguf -p 'hello' --n-gpu-layers 99"
+
   gfx1201:
     status: partial
     tested_on_rocm: "7.x"

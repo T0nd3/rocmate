@@ -38,6 +38,20 @@ chips:
       - "pip install torch --index-url https://download.pytorch.org/whl/rocm6.2"
       - "pip install exllamav2"
 
+  gfx1151:
+    status: partial
+    tested_on_rocm: "7.x"
+    notes: >
+      Strix Halo — should work via PyTorch ROCm 7.x. GPTQ/EXL2 kernels
+      may need ROCm 7.x rocBLAS. APU unified memory limits model size to
+      ~7B Q4 with reasonable context length.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.5.1"
+    install_hints:
+      - "pip install torch --index-url https://download.pytorch.org/whl/rocm7.2"
+      - "pip install exllamav2"
+      - "Reduce max_seq_len if VRAM exhausted."
+
   gfx1102:
     status: partial
     tested_on_rocm: "6.2"

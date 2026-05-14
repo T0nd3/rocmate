@@ -21,6 +21,8 @@ class GpuInfo:
 # Ordered most-specific first so "RX 7900 XTX" matches before a hypothetical
 # shorter prefix would.
 _NAME_TO_GFX: list[tuple[str, str]] = [
+    ("Radeon 8060", "gfx1151"),
+    ("Radeon 8050", "gfx1151"),
     ("RX 9070", "gfx1201"),
     ("RX 7900", "gfx1100"),
     ("RX 7800", "gfx1101"),
@@ -36,8 +38,10 @@ _NAME_TO_GFX: list[tuple[str, str]] = [
 
 
 def _gfx_from_name(name: str) -> str | None:
+    normalized = re.sub(r"\s*(?:\(tm\)|™)\s*", " ", name, flags=re.IGNORECASE)
+    normalized = re.sub(r"\s+", " ", normalized).strip().casefold()
     for substring, gfx in _NAME_TO_GFX:
-        if substring in name:
+        if substring.casefold() in normalized:
             return gfx
     return None
 

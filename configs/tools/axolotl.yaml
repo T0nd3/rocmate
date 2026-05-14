@@ -41,6 +41,21 @@ chips:
       - "Same install as gfx1100."
       - "Add gradient_checkpointing: true and micro_batch_size: 1 to your config."
 
+  gfx1151:
+    status: partial
+    tested_on_rocm: "7.x"
+    notes: >
+      Strix Halo — QLoRA of 7B models should fit in the shared memory pool.
+      Flash-attn 2 via ROCm CK. bitsandbytes ROCm fork required.
+      Expect lower throughput vs. dGPU due to unified memory bandwidth.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.5.1"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "git clone https://github.com/axolotl-ai-cloud/axolotl && cd axolotl"
+      - "pip install torch --index-url https://download.pytorch.org/whl/rocm7.2"
+      - "Use gradient_checkpointing: true and micro_batch_size: 1 in your config"
+
   gfx1102:
     status: partial
     tested_on_rocm: "6.2"
