@@ -26,6 +26,25 @@ chips:
     install_hints:
       - "pip install torch torchaudio --index-url https://download.pytorch.org/whl/rocm6.2"
 
+  gfx1151:
+    status: tested
+    tested_on_rocm: "7.13"
+    notes: >
+      Strix Halo (Radeon 8060S) — tested successfully with insanely-fast-whisper-rocm
+      on ROCm 7.13. Uses native HuggingFace Transformers pipeline + PyTorch SDPA on HIP.
+      Model loads to GPU (cuda device = ROCm hip), hip=7.13.26154 detected, SDPA used.
+      Supports word timestamps, VAD, and Demucs denoising.
+    env_vars: {}
+    install_hints:
+      - "git clone https://github.com/beecave-homelab/insanely-fast-whisper-rocm && cd insanely-fast-whisper-rocm"
+      - "mamba run -n therock pip install fastapi uvicorn python-multipart python-dotenv pyyaml click pydub ffmpeg-python soundfile rich huggingface-hub accelerate optimum gradio typer demucs openai-whisper"
+      - "Also run: mamba install -n therock -c conda-forge ffmpeg -y"
+      - "Download model: huggingface-cli download openai/whisper-large-v3-turbo"
+      - "CLI: mamba run -n therock python -m insanely_fast_whisper_rocm.cli transcribe audio.wav --model openai/whisper-large-v3-turbo --language en --device cuda --timestamp-type word"
+      - "Use --timestamp-type word (or chunk/sentence) to avoid post-processing bugs with None chunks"
+      - "Tip: processing_time_seconds in output JSON shows actual GPU inference time"
+      - "API server: mamba run -n therock python -m insanely_fast_whisper_rocm"
+
   gfx1030:
     status: partial
     tested_on_rocm: "6.2"

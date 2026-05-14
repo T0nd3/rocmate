@@ -40,6 +40,22 @@ chips:
       - "Same install as gfx1100."
       - "Launch with: python main.py --lowvram --listen"
 
+  gfx1151:
+    status: partial
+    tested_on_rocm: "7.x"
+    notes: >
+      Strix Halo — works via PyTorch ROCm 7.x. APU shared memory limits model size.
+      SD 1.5 and SDXL should work; Flux.1 may be tight with shared memory.
+      Use --lowvram to conserve memory.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.5.1"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "git clone https://github.com/comfyanonymous/ComfyUI && cd ComfyUI"
+      - "python -m venv venv && source venv/bin/activate"
+      - "pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm7.2"
+      - "pip install -r requirements.txt && python main.py --listen --lowvram"
+
   gfx1030:
     status: partial
     tested_on_rocm: "6.2"

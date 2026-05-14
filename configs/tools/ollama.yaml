@@ -24,6 +24,19 @@ chips:
     install_hints:
       - "curl -fsSL https://ollama.com/install.sh | sh"
 
+  gfx1151:
+    status: tested
+    tested_on_rocm: "7.x"
+    notes: >
+      Radeon 8060S / 8050S (Strix Halo APU) — works with ROCm 7.x.
+      Ollama detects the iGPU natively. Unified memory architecture means no dedicated
+      VRAM; up to ~10 GB usable for models depending on system RAM configuration.
+    env_vars: {}
+    install_hints:
+      - "curl -fsSL https://ollama.com/install.sh | sh"
+      - "Verify with: ollama run llama3.1:8b --verbose (check GPU layers loaded)"
+      - "Monitor via: watch -n 1 rocm-smi"
+
   gfx1201:
     status: partial
     tested_on_rocm: "7.x"

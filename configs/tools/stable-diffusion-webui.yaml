@@ -38,6 +38,19 @@ chips:
       - "Same as gfx1100."
       - "Launch with: ./webui.sh --medvram"
 
+  gfx1151:
+    status: partial
+    tested_on_rocm: "7.x"
+    notes: >
+      Strix Halo — works via PyTorch ROCm 7.x. APU shared memory may limit
+      batch size and resolution. SD 1.5 is comfortable; SDXL needs --medvram.
+    env_vars:
+      HSA_OVERRIDE_GFX_VERSION: "11.5.1"
+      PYTORCH_HIP_ALLOC_CONF: "expandable_segments:True"
+    install_hints:
+      - "export TORCH_COMMAND='pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm7.2'"
+      - "./webui.sh --medvram"
+
   gfx1030:
     status: partial
     tested_on_rocm: "6.2"

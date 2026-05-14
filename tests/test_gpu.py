@@ -168,6 +168,53 @@ def test_run_returns_none_when_command_not_found():
     assert result is None
 
 
+# ---------------------------------------------------------------------------
+# gfx1151 (Strix Halo) detection
+# ---------------------------------------------------------------------------
+
+_ROCMINFO_GFX1151 = """\
+ROCk module is loaded
+
+**** Agent 1 ****
+  Name:                    gfx1151
+  Marketing Name:          AMD Radeon 8060S Graphics
+  Device Type:             GPU
+  Size:                    4194304(0x400000) KB
+"""
+
+
+def test_gfx1151_detected_correctly():
+    with patch("rocmate.gpu._run", return_value=_ROCMINFO_GFX1151):
+        gpus = gpu._detect_amd_gpus_linux()
+    assert len(gpus) == 1
+    assert gpus[0].gfx_version == "gfx1151"
+    assert gpus[0].name == "AMD Radeon 8060S Graphics"
+
+
+def test_gfx_from_name_matches_radeon_8060s():
+    assert gpu._gfx_from_name("AMD Radeon 8060S Graphics") == "gfx1151"
+
+
+def test_gfx_from_name_matches_radeon_tm_8060s():
+    assert gpu._gfx_from_name("AMD Radeon(TM) 8060S Graphics") == "gfx1151"
+
+
+def test_gfx_from_name_matches_radeon_8050s():
+    assert gpu._gfx_from_name("AMD Radeon 8050S Graphics") == "gfx1151"
+
+
+def test_gfx_from_name_requires_substring_match():
+    # Must not contain any substring from _NAME_TO_GFX (no "Radeon 8060", no
+    # "RX 9070", etc.) — only names with the exact substring match gfx1151.
+    assert gpu._gfx_from_name("NVIDIA GeForce RTX 4090") is None
+
+
+def test_gfx1151_vram_parsed_correctly():
+    with patch("rocmate.gpu._run", return_value=_ROCMINFO_GFX1151):
+        gpus = gpu._detect_amd_gpus_linux()
+    assert gpus[0].vram_mb == 4096  # 4194304 KB // 1024
+
+
 # =============================================================================
 # Windows detection (v0.2)
 # =============================================================================
@@ -197,6 +244,7 @@ _HIPINFO_NO_DEVICE = "No devices found.\n"
 
 # wmic /format:list output (one AMD + one non-AMD card)
 _WMIC_ONE_AMD = "AdapterRAM=25769803776\nName=AMD Radeon RX 7900 XTX\n"
+_WMIC_GFX1151_TM = "AdapterRAM=17179869184\nName=AMD Radeon(TM) 8060S Graphics\n"
 _WMIC_NON_AMD = "AdapterRAM=8589934592\nName=NVIDIA GeForce RTX 4090\n"
 _WMIC_TWO_CARDS = (
     "AdapterRAM=25769803776\nName=AMD Radeon RX 7900 XTX\n\n"
@@ -247,6 +295,13 @@ class TestDetectViaWmi:
         with patch("rocmate.gpu._run", return_value=_WMIC_ONE_AMD):
             gpus = gpu._detect_via_wmi()
         assert gpus[0].vram_mb == 24576
+
+    def test_radeon_tm_8060s_detected_as_gfx1151(self):
+        with patch("rocmate.gpu._run", return_value=_WMIC_GFX1151_TM):
+            gpus = gpu._detect_via_wmi()
+        assert len(gpus) == 1
+        assert gpus[0].gfx_version == "gfx1151"
+        assert gpus[0].name == "AMD Radeon(TM) 8060S Graphics"
 
     def test_non_amd_gpu_excluded(self):
         with patch("rocmate.gpu._run", return_value=_WMIC_NON_AMD):

@@ -17,7 +17,7 @@ pip install rocmate
 
 ## Why?
 
-AMD GPUs offer great VRAM-per-dollar (especially the RX 7900 XTX with 24 GB), but getting Ollama, ComfyUI, faster-whisper, or axolotl to actually use the GPU still involves hunting through blog posts, GitHub issues, and Discord threads. Information is scattered, often outdated, and rarely specific to your chip generation (gfx1030 vs gfx1100 vs gfx1201).
+AMD GPUs offer great VRAM-per-dollar (especially the RX 7900 XTX with 24 GB), but getting Ollama, ComfyUI, faster-whisper, or axolotl to actually use the GPU still involves hunting through blog posts, GitHub issues, and Discord threads. Information is scattered, often outdated, and rarely specific to your chip generation (gfx1030 vs gfx1100 vs gfx1151 vs gfx1201).
 
 `rocmate` consolidates this knowledge into one place — version-controlled, testable, community-maintained.
 
@@ -48,16 +48,16 @@ rocmate doctor --fix
 
 → **[Live compatibility matrix](https://t0nd3.github.io/rocmate/)** — auto-updated on every commit.
 
-| Tool | gfx1100<br>RX 7900 XT/XTX | gfx1101<br>RX 7800/7700 XT | gfx1102<br>RX 7600 | gfx1030<br>RX 6800/6900 | gfx1201<br>RX 9070 |
-|------|:-:|:-:|:-:|:-:|:-:|
-| Ollama | ✅ | ✅ | ✅ | ✅ | 🟡 |
-| ComfyUI | ✅ | ✅ | 🟡 | 🟡 | — |
-| faster-whisper | ✅ | 🟡 | — | — | — |
-| llama.cpp | ✅ | ✅ | ✅ | ✅ | 🟡 |
-| Stable Diffusion WebUI | ✅ | ✅ | 🟡 | 🟡 | — |
-| vLLM | ✅ | ✅ | 🟡 | 🟡 | 🟡 |
-| Axolotl | ✅ | ✅ | 🟡 | 🟡 | — |
-| ExLlamaV2 | ✅ | ✅ | 🟡 | 🟡 | — |
+| Tool | gfx1151<br>Radeon 8060S/8050S | gfx1100<br>RX 7900 XT/XTX | gfx1101<br>RX 7800/7700 XT | gfx1102<br>RX 7600 | gfx1030<br>RX 6800/6900 | gfx1201<br>RX 9070 |
+|------|:-:|:-:|:-:|:-:|:-:|:-:|
+| Ollama | ✅ | ✅ | ✅ | ✅ | ✅ | 🟡 |
+| ComfyUI | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
+| faster-whisper | ✅ | ✅ | 🟡 | — | — | — |
+| llama.cpp | ✅ | ✅ | ✅ | ✅ | ✅ | 🟡 |
+| Stable Diffusion WebUI | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
+| vLLM | ✅ | ✅ | ✅ | 🟡 | 🟡 | 🟡 |
+| Axolotl | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
+| ExLlamaV2 | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
 
 ✅ tested · 🟡 partial / workarounds needed · — no data yet
 

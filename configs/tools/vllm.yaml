@@ -49,6 +49,29 @@ chips:
       - "pip install vllm --extra-index-url https://download.pytorch.org/whl/rocm6.2"
       - "python -m vllm.entrypoints.openai.api_server --model <model> --gpu-memory-utilization 0.80"
 
+  gfx1151:
+    status: tested
+    tested_on_rocm: "7.13 nightly (TheRock)"
+    notes: >
+      Strix Halo (gfx1151) — use Kyuz0's Strix Halo vLLM toolbox/container.
+      The stable image builds vLLM and PyTorch against TheRock ROCm gfx1151
+      nightlies and includes Strix-specific patches for amdsmi, AITER/FlashAttention,
+      Triton, and APU unified-memory accounting. Smoke-tested locally on Radeon
+      8060S with docker.io/kyuz0/vllm-therock-gfx1151:stable: PyTorch ROCm matmul
+      worked, vLLM 0.19.2rc1.dev113+g6aa057c9d served facebook/opt-125m through
+      the OpenAI API, and completions returned successfully. If startup reports
+      free unified memory below the requested allocation, lower
+      --gpu-memory-utilization. A Linux kernel with the gfx1151 CWSR fix and sane
+      GTT/TTM limits is still recommended.
+    env_vars: {}
+    install_hints:
+      - "git clone https://github.com/kyuz0/amd-strix-halo-vllm-toolboxes && cd amd-strix-halo-vllm-toolboxes"
+      - "Recommended: ./refresh_toolbox.sh stable"
+      - "Manual toolbox: toolbox create vllm --image docker.io/kyuz0/vllm-therock-gfx1151:stable -- --device /dev/dri --device /dev/kfd --group-add video --group-add render --security-opt seccomp=unconfined"
+      - "Enter and launch: toolbox enter vllm && start-vllm"
+      - "Direct serve example: vllm serve <model> --gpu-memory-utilization 0.5 --attention-backend TRITON_ATTN --mm-encoder-attn-backend TRITON_ATTN"
+      - "If vLLM refuses to start with a free-memory error, reduce --gpu-memory-utilization (for example 0.35 on busy 128 GB systems)."
+
   gfx1201:
     status: partial
     tested_on_rocm: "7.x"
@@ -57,4 +80,4 @@ chips:
       available; expect to build from source. Flash-attention support still maturing.
     env_vars: {}
     install_hints:
-      - "Build from source: git clone https://github.com/vllm-project/vllm && pip install -e . --extra-index-url https://download.pytorch.org/whl/rocm7.x"
+      - "Build from source: git clone https://github.com/vllm-project/vllm && pip install -e . --extra-index-url https://download.pytorch.org/whl/rocm7.2"

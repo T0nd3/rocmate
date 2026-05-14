@@ -195,6 +195,97 @@ def test_exllamav2_gfx1100_has_cmake_hint():
     assert any("cmake" in h.lower() or "pip install" in h.lower() for h in hints)
 
 
+# ---------------------------------------------------------------------------
+# gfx1151 (Strix Halo) config validation
+# ---------------------------------------------------------------------------
+
+GFX1151_TOOLS = [
+    "ollama",
+    "llama-cpp",
+    "vllm",
+    "faster-whisper",
+    "comfyui",
+    "stable-diffusion-webui",
+    "axolotl",
+    "exllamav2",
+]
+
+
+def test_all_tools_have_gfx1151_entry():
+    for tool in GFX1151_TOOLS:
+        cfg = configs.load_tool(tool)
+        assert "gfx1151" in cfg.chips, f"{tool} is missing gfx1151 entry"
+
+
+def test_gfx1151_entries_have_valid_status():
+    for tool in GFX1151_TOOLS:
+        cfg = configs.load_tool(tool)
+        chip = cfg.chips["gfx1151"]
+        assert chip.status in {"tested", "partial", "broken"}, (
+            f"{tool}/gfx1151 has invalid status '{chip.status}'"
+        )
+
+
+def test_gfx1151_entries_have_rocm_7x():
+    for tool in GFX1151_TOOLS:
+        cfg = configs.load_tool(tool)
+        chip = cfg.chips["gfx1151"]
+        rocm = chip.tested_on_rocm
+        assert rocm is not None, f"{tool}/gfx1151 missing tested_on_rocm"
+        assert "7" in str(rocm), f"{tool}/gfx1151 should be ROCm 7.x, got {rocm}"
+
+
+def test_ollama_gfx1151_is_tested():
+    chip = configs.load_tool("ollama").chips["gfx1151"]
+    assert chip.status == "tested"
+
+
+def test_llama_cpp_gfx1151_is_tested():
+    chip = configs.load_tool("llama-cpp").chips["gfx1151"]
+    assert chip.status == "tested"
+
+
+def test_vllm_gfx1151_uses_kyuz0_toolbox():
+    chip = configs.load_tool("vllm").chips["gfx1151"]
+    assert chip.status == "tested"
+    assert chip.env_vars == {}
+    hints = " ".join(chip.install_hints)
+    assert "kyuz0/amd-strix-halo-vllm-toolboxes" in hints
+    assert "docker.io/kyuz0/vllm-therock-gfx1151:stable" in hints
+
+
+def test_faster_whisper_gfx1151_is_tested():
+    chip = configs.load_tool("faster-whisper").chips["gfx1151"]
+    assert chip.status == "tested"
+    assert chip.env_vars == {}
+    assert "insanely-fast-whisper-rocm" in " ".join(chip.install_hints)
+
+
+def test_comfyui_gfx1151_has_pytorch_env():
+    chip = configs.load_tool("comfyui").chips["gfx1151"]
+    assert "PYTORCH_HIP_ALLOC_CONF" in chip.env_vars
+    assert chip.status == "partial"
+
+
+def test_gfx1151_env_vars_are_string_dicts():
+    for tool in GFX1151_TOOLS:
+        cfg = configs.load_tool(tool)
+        chip = cfg.chips["gfx1151"]
+        for k, v in chip.env_vars.items():
+            assert isinstance(k, str) and isinstance(v, str), (
+                f"{tool}/gfx1151 env var {k} must be str→str"
+            )
+
+
+def test_gfx1151_install_hints_are_string_lists():
+    for tool in GFX1151_TOOLS:
+        cfg = configs.load_tool(tool)
+        chip = cfg.chips["gfx1151"]
+        assert isinstance(chip.install_hints, list), f"{tool}/gfx1151 install_hints must be a list"
+        for hint in chip.install_hints:
+            assert isinstance(hint, str), f"{tool}/gfx1151 install_hints must contain strings"
+
+
 # --- render ---
 
 
