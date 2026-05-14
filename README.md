@@ -52,7 +52,7 @@ rocmate doctor --fix
 |------|:-:|:-:|:-:|:-:|:-:|:-:|
 | Ollama | ✅ | ✅ | ✅ | ✅ | ✅ | 🟡 |
 | ComfyUI | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
-| faster-whisper | — | ✅ | 🟡 | — | — | — |
+| faster-whisper | ✅ | ✅ | 🟡 | — | — | — |
 | llama.cpp | ✅ | ✅ | ✅ | ✅ | ✅ | 🟡 |
 | Stable Diffusion WebUI | 🟡 | ✅ | ✅ | 🟡 | 🟡 | — |
 | vLLM | ✅ | ✅ | ✅ | 🟡 | 🟡 | 🟡 |
