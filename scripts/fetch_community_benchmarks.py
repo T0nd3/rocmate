@@ -41,10 +41,7 @@ def d1_query(sql: str) -> list[dict]:
         print(f"D1 error: {data}", file=sys.stderr)
         sys.exit(1)
 
-    result = data["result"][0]
-    cols   = result["results"].get("columns", [])
-    rows   = result["results"].get("rows", [])
-    return [dict(zip(cols, row)) for row in rows]
+    return data["result"][0].get("results", [])
 
 
 def main() -> None:
