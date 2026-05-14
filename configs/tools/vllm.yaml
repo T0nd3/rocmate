@@ -21,7 +21,7 @@ chips:
   gfx1101:
     status: tested
     tested_on_rocm: "6.2"
-    notes: RX 7800 XT / RX 7700 XT — works on Linux. 16 GB VRAM limits to ≤13B models.
+    notes: RX 7800 XT / RX 7700 XT — works on Linux. 16 GB VRAM limits to <=13B models.
     env_vars:
       HSA_OVERRIDE_GFX_VERSION: "11.0.0"
     install_hints:

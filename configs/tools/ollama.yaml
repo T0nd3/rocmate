@@ -46,11 +46,11 @@ chips:
   gfx1102:
     status: tested
     tested_on_rocm: "6.3"
-    notes: RX 7600 — works on Linux with ROCm 6.x. Lower VRAM (8 GB) limits model size; stick to ≤7B Q4.
+    notes: RX 7600 — works on Linux with ROCm 6.x. Lower VRAM (8 GB) limits model size; stick to <=7B Q4.
     env_vars: {}
     install_hints:
       - "curl -fsSL https://ollama.com/install.sh | sh"
-      - "Limit to models ≤7B Q4 due to 8 GB VRAM."
+      - "Limit to models <=7B Q4 due to 8 GB VRAM."
 
   gfx1034:
     status: partial
@@ -63,4 +63,4 @@ chips:
       HSA_OVERRIDE_GFX_VERSION: "10.3.0"
     install_hints:
       - "Set HSA_OVERRIDE before launching the Ollama service"
-      - "Limit to small models (≤7B Q4) due to lower memory bandwidth"
+      - "Limit to small models (<=7B Q4) due to lower memory bandwidth"
