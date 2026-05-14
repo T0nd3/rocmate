@@ -203,6 +203,7 @@ GFX1151_TOOLS = [
     "ollama",
     "llama-cpp",
     "vllm",
+    "faster-whisper",
     "comfyui",
     "stable-diffusion-webui",
     "axolotl",
@@ -251,6 +252,13 @@ def test_vllm_gfx1151_uses_kyuz0_toolbox():
     hints = " ".join(chip.install_hints)
     assert "kyuz0/amd-strix-halo-vllm-toolboxes" in hints
     assert "docker.io/kyuz0/vllm-therock-gfx1151:stable" in hints
+
+
+def test_faster_whisper_gfx1151_is_tested():
+    chip = configs.load_tool("faster-whisper").chips["gfx1151"]
+    assert chip.status == "tested"
+    assert chip.env_vars == {}
+    assert "insanely-fast-whisper-rocm" in " ".join(chip.install_hints)
 
 
 def test_comfyui_gfx1151_has_pytorch_env():
