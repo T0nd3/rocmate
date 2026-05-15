@@ -24,21 +24,35 @@ AMD GPUs offer great VRAM-per-dollar (especially the RX 7900 XTX with 24 GB), bu
 ## Quickstart
 
 ```bash
-# Install (Python 3.11+)
 pip install rocmate
+```
 
-# Check your system
-rocmate doctor
+**Check your system:**
+```
+$ rocmate doctor
+✓ GPU detected: AMD Radeon RX 7900 XTX (gfx1100)
+✓ ROCm found: 7.2.3
+✗ User not in 'render' group — run: sudo usermod -aG render $USER
+✓ Docker available
+✓ Vulkan available
+```
 
-# Show the tested config for a tool (optionally filter by chip)
-rocmate show ollama
-rocmate show ollama --chip gfx1100
+**Show the tested config for a tool:**
+```bash
+rocmate show llama-cpp               # auto-detects your chip
+rocmate show llama-cpp --chip gfx1100
+```
 
-# Search tools by keyword
+**Find tools by keyword:**
+```bash
 rocmate search llm
+rocmate list --chip gfx1151          # filter by chip
+```
 
-# Install a tool with the right ENV vars
+**Install with the right ENV vars (shows plan first, asks for confirmation):**
+```bash
 rocmate install ollama
+rocmate install ollama --chip gfx1100   # skip GPU detection
 
 # Auto-fix detected issues
 rocmate doctor --fix
@@ -66,25 +80,6 @@ Run `rocmate show <tool>` for chip-specific ENV vars, install hints, and tested 
 ## Status
 
 Actively maintained by [@T0nd3](https://github.com/T0nd3) on an RX 7900 XTX. Contributions for other AMD chips are very welcome — one YAML file, five minutes. See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Roadmap
-
-- [x] `rocmate doctor` — system diagnostic (GPU, ROCm, groups, Docker, Vulkan)
-- [x] `rocmate show <tool>` — display tested config per chip
-- [x] `rocmate show <tool> --chip <gfx>` — filter to a single chip
-- [x] `rocmate list` — list all supported tools
-- [x] `rocmate search <keyword>` — search tools by name or description
-- [x] `rocmate install <tool>` — plan and execute install with correct ENV vars
-- [x] `rocmate doctor --tool <name>` — tool-specific compatibility check
-- [x] `rocmate doctor --fix` — interactively apply fixes for detected issues
-- [x] Windows / HIP SDK support (GPU detection via hipinfo + WMI fallback)
-- [x] Web-facing compatibility matrix (auto-deployed via GitHub Pages)
-
-## Non-goals
-
-- Not a replacement for ROCm, Ollama, or any inference engine
-- Not a fork of upstream tools — only configs and glue
-- Not a benchmarking tool
 
 ## License
 
