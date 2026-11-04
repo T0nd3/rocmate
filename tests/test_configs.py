@@ -24,6 +24,7 @@ def test_list_tools_returns_all_tools():
         "vllm",
         "axolotl",
         "exllamav2",
+        "radiance",
     }
 
 

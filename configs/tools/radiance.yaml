@@ -1,0 +1,40 @@
+name: radiance
+description: >
+  Self-contained C++/HIP LLM inference server with an OpenAI-compatible API and
+  native FP8 kernels (no PyTorch, no AITER dependency). Ships as a Docker image,
+  supports tensor parallelism across multiple AMD GPUs, and serves models in a
+  compact .rad format.
+homepage: https://codeberg.org/StillDeadcode/radiance
+
+chips:
+  gfx1201:
+    status: tested
+    tested_on_rocm: "7.16"
+    notes: >
+      2x Radeon AI PRO R9700 32 GB (gfx1201) + gfx1036 iGPU, Ubuntu 26.04 LTS,
+      kernel 7.0, ROCm 7.16, Docker GPU passthrough via --device=/dev/kfd and
+      --device=/dev/dri. Running daily as a TP=2 inference server for a large MoE
+      model (KV cache in FP8, expert-tiered placement, ~200k context) on both
+      cards. CRITICAL: --security-opt seccomp=unconfined is required — Docker's
+      default seccomp profile refuses the io_uring and NUMA-binding calls the ROCm
+      runtime makes for host memory (docs/DOCKER.md); on this rig the failure
+      surfaced as a misleading "geometry rejected" kernel error, not a permission
+      error. NETWORK: --network host with --host 0.0.0.0 exposes an unauthenticated
+      OpenAI-compatible API on the whole LAN (and seccomp is disabled) — keep
+      --host 127.0.0.1 unless you deliberately serve the network. HSA_OVERRIDE_GFX_VERSION
+      is NOT needed on ROCm 7.x — gfx1201 is a first-class target in rocminfo. P2P
+      between the two GPUs works out of the box (CONFIG_HSA_AMD_P2P is enabled by
+      default in the Ubuntu generic kernel; verify with 'zcat /proc/config.gz'
+      before troubleshooting multi-GPU bandwidth). The AITER gfx1201 gap that
+      silently degrades FP8 to FP32 under SGLang/vLLM does not apply here: radiance
+      has its own native FP8 kernels with no AITER dependency (verified with strings
+      on the binary). The engine republishes :latest very frequently and CLI flags
+      change between majors without back-compat — pin the image tag and re-read
+      docker logs (it self-reports the minimum --gpu-headroom-mib) after every
+      update. For changelogs, query the Codeberg API (GET /api/v1/repos/StillDeadcode/radiance/commits)
+      — the Codeberg web UI is bot-walled — and the Docker Hub tags API for releases.
+    env_vars: {}
+    install_hints:
+      - "Docker run (dual GPU TP=2, aligned with upstream docs/DOCKER.md): sudo docker run -d --name radiance --network host --init --ulimit memlock=-1 --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add \"$(getent group render | cut -d: -f3)\" --group-add \"$(getent group video | cut -d: -f3)\" -v /path/models:/models:ro stilldeadcode/radiance:1.12.0 --model /models/model.rad --served-model-name mymodel --host 127.0.0.1 --port 8000 --tp 2 --max-model-len 32768"
+      - "Verify after start: sudo docker logs radiance (check KV pool, headroom warnings), then curl http://127.0.0.1:8000/v1/models and one real /v1/chat/completions request."
+      - "Do not run production on :latest — it is republished continuously and flags can break between majors; pin a version tag (docker pull stilldeadcode/radiance:1.12.0) and re-check docker run flags against docs/DOCKER.md after every update."

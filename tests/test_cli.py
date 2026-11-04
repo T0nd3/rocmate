@@ -47,7 +47,7 @@ def test_list_shows_all_tools():
 
 def test_list_shows_tool_count():
     result = runner.invoke(app, ["list"])
-    assert "8" in result.output
+    assert "9" in result.output
 
 
 # --- rocmate show ---
